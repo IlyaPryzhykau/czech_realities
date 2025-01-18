@@ -13,4 +13,5 @@ class Question(Base):
     topic_id = Column(Integer, ForeignKey('topics.id'))
     update_date = Column(DateTime)
     topic = relationship('Topic', back_populates='questions')
-    answers = relationship('Answer', back_populates='question')
+    answers = relationship(
+        'Answer', back_populates='question', cascade='delete')
