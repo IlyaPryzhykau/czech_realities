@@ -25,4 +25,4 @@ class CategoryResponse(CategoryBase):
     id: int
 
     class Config:
-        orm_made = True
+        orm_mode = True
