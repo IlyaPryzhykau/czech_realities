@@ -6,6 +6,7 @@ from app.api.endpoints import (
 
 main_router = APIRouter()
 
+
 main_router.include_router(
     category_router, prefix='/category', tags=['Category']
 )
@@ -17,5 +18,6 @@ main_router.include_router(
 main_router.include_router(
     topic_router, prefix='/topic', tags=['Topic']
 )
+
 
 main_router.include_router(user_router)

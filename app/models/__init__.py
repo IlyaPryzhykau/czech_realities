@@ -1,5 +1,5 @@
-from .answer import Answer
-from .category import Category
-from .question import Question
-from .topic import Topic
-from .user import User
+from .answer import Answer  # noqa
+from .category import Category  # noqa
+from .question import Question  # noqa
+from .topic import Topic  # noqa
+from .user import User  # noqa
