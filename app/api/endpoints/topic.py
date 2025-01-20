@@ -51,7 +51,7 @@ async def get_all_topics(
     response_model=TopicResponse,
     dependencies=[Depends(current_superuser)]
 )
-async def partially_update_category(
+async def partially_update_topic(
         topic_id: int,
         obj_in: TopicUpdate,
         session: AsyncSession = Depends(get_async_session)
@@ -70,7 +70,7 @@ async def partially_update_category(
     response_model=TopicResponse,
     dependencies=[Depends(current_superuser)]
 )
-async def delete_category(
+async def delete_topic(
         topic_id: int,
         session: AsyncSession = Depends(get_async_session)
 ):

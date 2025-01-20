@@ -1,6 +1,8 @@
 from datetime import datetime, date
 from pydantic import BaseModel, Field, field_validator, field_serializer
 
+from .topic import TopicResponse
+
 
 MAX_NAME_LENGTH = 300
 DATE_FORMAT = '%d.%m.%Y'
@@ -10,7 +12,6 @@ TIME_EXAMPLE = '12.12.2021'
 class QuestionBase(BaseModel):
     text: str = Field(..., max_length=MAX_NAME_LENGTH)
     image_url: str | None = None
-    topic_id: int
     update_date: date = Field(..., example=TIME_EXAMPLE)
 
     @field_validator('update_date', mode='before')
@@ -39,7 +40,7 @@ class QuestionBase(BaseModel):
 
 
 class QuestionCreate(QuestionBase):
-    pass
+    topic_id: int
 
 
 class QuestionUpdate(QuestionBase):
@@ -50,6 +51,18 @@ class QuestionUpdate(QuestionBase):
 
 class QuestionResponse(QuestionBase):
     id: int
+    topic_id: int
+
+    class Config:
+        orm_mode = True
+
+
+class QuestionResponseWithTopicAndAnswers(QuestionBase):
+    id: int
+    text: str
+    image_url: str | None
+    topic: TopicResponse
+    update_date: date
 
     class Config:
         orm_mode = True

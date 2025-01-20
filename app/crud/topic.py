@@ -24,9 +24,9 @@ class TopicCRUD(CRUDBase):
             session: AsyncSession
     ) -> Topic:
         topic = await session.execute(
-            select(Topic).options(joinedload(Topic.category)).filter(
-                Topic.id == topic_id
-            )
+            select(Topic)
+            .options(joinedload(Topic.category))
+            .filter(Topic.id == topic_id)
         )
         return topic.scalars().first()
 
