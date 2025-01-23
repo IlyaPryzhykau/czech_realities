@@ -4,9 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.question import question_crud
+from app.crud.topic import topic_crud
 from app.api.endpoints.validators import get_object_or_404
 from app.schemas.question import (
-    QuestionCreate, QuestionResponse, QuestionUpdate, QuestionResponseWithTopicAndAnswers)
+    QuestionCreate, QuestionResponse, QuestionUpdate,
+    QuestionResponseWithTopicAndAnswers)
 
 
 router = APIRouter()
@@ -43,6 +45,18 @@ async def get_random_question(
         session: AsyncSession = Depends(get_async_session)
 ):
     return await question_crud.get_random_question(session=session)
+
+
+@router.get(
+    '/by-topic/{topic_id}',
+    response_model=list[QuestionResponseWithTopicAndAnswers]
+)
+async def get_questions_by_topic(
+        topic_id: int,
+        session: AsyncSession = Depends(get_async_session)
+):
+    await get_object_or_404(topic_id, topic_crud, session)
+    return await question_crud.get_all_questions_by_topic(topic_id, session)
 
 
 @router.get(

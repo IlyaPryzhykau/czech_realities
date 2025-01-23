@@ -8,6 +8,9 @@ from app.crud.base import CRUDBase
 from app.models import Question, Topic
 
 
+QUESTION_LIMIT = 1
+
+
 class QuestionCRUD(CRUDBase):
 
     async def get_question_with_answers(
@@ -45,7 +48,7 @@ class QuestionCRUD(CRUDBase):
         result = await session.execute(
             select(Question.id)
             .offset(offset_value)
-            .limit(1)
+            .limit(QUESTION_LIMIT)
         )
 
         random_question_id = result.scalar_one_or_none()
@@ -74,10 +77,30 @@ class QuestionCRUD(CRUDBase):
             select(Question.id)
             .filter(Question.topic_id == topic_id)
             .offset(offset_value)
-            .limit(1)
+            .limit(QUESTION_LIMIT)
         )
         random_question_id = result.scalar_one_or_none()
-        return await self.get_question_with_answers(random_question_id, session)
+        return await self.get_question_with_answers(
+            random_question_id, session)
+
+    async def get_all_questions_by_topic(
+            self,
+            topic_id: int,
+            session: AsyncSession
+    ) -> list[Question]:
+        """
+        Retrieve all questions for a given topic.
+        """
+        result = await session.execute(
+            select(Question).
+            options(
+                joinedload(Question.answers),
+                joinedload(Question.topic)
+            )
+            .filter(Question.topic_id == topic_id)
+        )
+        result = result.unique()
+        return list(result.scalars().all())
 
     async def get_random_ticket(
         self,
