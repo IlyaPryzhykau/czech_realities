@@ -1,12 +1,32 @@
+"""
+This module defines an admin view for the Question model, used by sqladmin.
+"""
+
 from sqladmin import ModelView
+
 from app.models import Question
 
 
 class QuestionAdmin(ModelView):
+    """
+    Admin configuration for the Question model.
+    """
+
     model = Question
     name = 'Question'
     name_plural = 'Questions'
-    icon = 'fa-solid fa-question'
-    column_list = ['id', 'text', 'topic_id', 'update_date']
-    pk_columns = [Question.id]
     identity = 'question'
+    icon = 'fa-solid fa-question'
+    pk_columns = (Question.id, )
+
+    column_list = ('id', 'text', 'image_url', 'topic', 'update_date')
+
+    column_labels = {
+        'id': 'ID',
+        'text': 'Question text',
+        'image_url': 'Image URL',
+        'topic': 'Topic',
+        'update_date': 'Update date',
+    }
+
+    column_searchable_list = ('text', )

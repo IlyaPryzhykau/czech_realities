@@ -1,3 +1,8 @@
+"""
+This module defines API endpoints for user registration, authentication,
+and user management using FastAPI Users.
+"""
+
 from fastapi import APIRouter
 
 from app.core.user import auth_backend, fastapi_users
@@ -6,17 +11,21 @@ from app.schemas.user import UserCreate, UserRead, UserUpdate
 
 router = APIRouter()
 
+#: JWT-based authentication endpoints
 router.include_router(
     fastapi_users.get_auth_router(auth_backend),
     prefix='/auth/jwt',
     tags=['auth'],
 )
+
+#: Registration endpoints
 router.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
     prefix='/auth',
     tags=['auth'],
 )
 
+#: User endpoints (excluding deletion)
 users_router = fastapi_users.get_users_router(UserRead, UserUpdate)
 users_router.routes = [
     rout for rout in users_router.routes if rout.name != 'users:delete_user'

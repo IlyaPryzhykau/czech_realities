@@ -1,3 +1,8 @@
+"""
+This module provides CRUD operations for the Question model, including
+methods for retrieving random questions and generating a random 'ticket.'
+"""
+
 from random import randrange
 
 from sqlalchemy.orm import joinedload
@@ -12,6 +17,18 @@ QUESTION_LIMIT = 1
 
 
 class QuestionCRUD(CRUDBase):
+    """
+    Specialized CRUD for the Question model.
+
+    Methods:
+        get_question_with_answers: Retrieve a question and its related answers.
+        get_random_question: Retrieve a random question from all
+            available questions.
+        get_random_question_by_topic: Retrieve a random question
+            for a specific topic.
+        get_all_questions_by_topic: Retrieve all questions for a given topic.
+        get_random_ticket: Retrieve a list of random questions (one per topic).
+    """
 
     async def get_question_with_answers(
         self,
@@ -20,6 +37,14 @@ class QuestionCRUD(CRUDBase):
     ) -> Question | None:
         """
         Retrieve a Question by its ID, including related Answers and Topic.
+
+        Args:
+            question_id (int): The ID of the question to retrieve.
+            session (AsyncSession): The current database session.
+
+        Returns:
+            Question | None: The Question object with answers and topic
+            if found, otherwise None.
         """
         result = await session.execute(
             select(Question)
@@ -37,6 +62,13 @@ class QuestionCRUD(CRUDBase):
     ) -> Question | None:
         """
         Retrieve a random Question from all available questions.
+
+        Args:
+            session (AsyncSession): The current database session.
+
+        Returns:
+            Question | None: A random Question object if any exist,
+            otherwise None.
         """
         result = await session.execute(
             select(func.count()).select_from(Question))
@@ -63,6 +95,14 @@ class QuestionCRUD(CRUDBase):
     ) -> Question | None:
         """
         Retrieve a random Question for the specified Topic.
+
+        Args:
+            topic_id (int): The ID of the topic.
+            session (AsyncSession): The current database session.
+
+        Returns:
+            Question | None: A random Question for the topic if any exist,
+            otherwise None.
         """
         result = await session.execute(
             select(func.count()).select_from(Question)
@@ -90,6 +130,13 @@ class QuestionCRUD(CRUDBase):
     ) -> list[Question]:
         """
         Retrieve all questions for a given topic.
+
+        Args:
+            topic_id (int): The ID of the topic.
+            session (AsyncSession): The current database session.
+
+        Returns:
+            list[Question]: A list of Question objects for the given topic.
         """
         result = await session.execute(
             select(Question).
@@ -108,6 +155,13 @@ class QuestionCRUD(CRUDBase):
     ) -> list[Question]:
         """
         Create a "ticket" by retrieving one random question for each Topic.
+
+        Args:
+            session (AsyncSession): The current database session.
+
+        Returns:
+            list[Question]: A list of randomly selected Question objects,
+            one per topic (if available).
         """
         ticket = []
         topics_result = await session.execute(select(Topic.id))
