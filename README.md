@@ -1,5 +1,5 @@
 
-# Project Title
+# Czech Realities
 
 A FastAPI-based application for managing **Categories**, **Topics**, **Questions**, and **Answers**, with user authentication and an admin interface powered by **sqladmin**.
 
