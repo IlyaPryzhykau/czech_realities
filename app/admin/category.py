@@ -4,7 +4,7 @@ This module defines an admin view for the Category model, used by sqladmin.
 
 from sqladmin import ModelView
 
-from app.models import Category
+from db_models import Category
 
 
 class CategoryAdmin(ModelView):

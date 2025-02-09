@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
 from app.crud.base import CRUDBase
-from app.models import Question, Topic
+from db_models import Question, Topic
 
 
 QUESTION_LIMIT = 1

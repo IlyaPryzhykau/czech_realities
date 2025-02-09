@@ -7,7 +7,7 @@ Question, and Answer).
 from sqladmin import Admin
 
 from app.core.config import settings
-from app.core.db import engine
+from app.core.db_config import engine
 from app.admin.base import BasicAuthBackend
 from app.admin.answer import AnswerAdmin
 from app.admin.category import CategoryAdmin

@@ -5,7 +5,7 @@ This module defines the CRUD API endpoints for managing Topic resources.
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import get_async_session
+from app.core.db_config import get_async_session
 from app.core.user import current_superuser
 from app.crud.topic import topic_crud
 from app.crud.category import category_crud

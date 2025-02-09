@@ -6,7 +6,7 @@ within a category. Each topic can have multiple questions.
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
-from app.core.db import Base
+from db_models.base import Base
 
 
 MAX_NAME_LENGTH = 100

@@ -4,7 +4,7 @@ This module defines an admin view for the Answer model, used by sqladmin.
 
 from sqladmin import ModelView
 
-from app.models import Answer
+from db_models import Answer
 
 
 class AnswerAdmin(ModelView):

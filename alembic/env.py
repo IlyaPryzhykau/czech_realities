@@ -6,7 +6,8 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
-from app.core.base import Base
+from db_models.base import Base
+from db_models import Answer, Category, Topic, Question, User
 from app.core.config import settings
 
 

@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.crud.base import CRUDBase
-from app.models import Topic
+from db_models import Topic
 
 
 class TopicCRUD(CRUDBase):

@@ -4,7 +4,7 @@ This module defines an admin view for the Question model, used by sqladmin.
 
 from sqladmin import ModelView
 
-from app.models import Question
+from db_models import Question
 
 
 class QuestionAdmin(ModelView):

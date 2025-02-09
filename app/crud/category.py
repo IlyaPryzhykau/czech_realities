@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.base import CRUDBase
-from app.models import Category
+from db_models import Category
 
 
 class CategoryCRUD(CRUDBase):

@@ -4,7 +4,7 @@ This module defines an admin view for the Topic model, used by sqladmin.
 
 from sqladmin import ModelView
 
-from app.models import Topic
+from db_models import Topic
 
 
 class TopicAdmin(ModelView):

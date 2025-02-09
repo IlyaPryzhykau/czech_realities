@@ -32,3 +32,4 @@ async def startup():
     Creates the first superuser in the database if none exists.
     """
     await create_first_superuser()
+

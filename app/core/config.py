@@ -34,7 +34,8 @@ class Settings(BaseSettings):
         Specifies the .env file location and encoding.
         """
         env_file = str(Path(__file__).resolve().parents[2] / '.env')
-        env_file_encoding = "utf-8"
+        extra = 'ignore'
+        env_file_encoding = 'utf-8'
 
 
 settings = Settings()

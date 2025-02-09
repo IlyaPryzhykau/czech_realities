@@ -3,7 +3,7 @@ This module provides CRUD operations for the Answer model.
 """
 
 from app.crud.base import CRUDBase
-from app.models import Answer
+from db_models import Answer
 
 
 class AnswerCRUD(CRUDBase):

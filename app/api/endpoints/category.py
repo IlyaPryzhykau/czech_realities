@@ -5,7 +5,7 @@ This module defines the CRUD API endpoints for managing Category resources.
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import get_async_session
+from app.core.db_config import get_async_session
 from app.core.user import current_superuser
 from app.crud.category import category_crud
 from app.api.endpoints.validators import (

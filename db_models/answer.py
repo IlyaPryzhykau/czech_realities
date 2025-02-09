@@ -7,7 +7,7 @@ and flagged as correct or incorrect.
 from sqlalchemy import Boolean, Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
-from app.core.db import Base
+from db_models.base import Base
 
 
 MAX_NAME_LENGTH = 200
