@@ -5,6 +5,7 @@ on application startup.
 """
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.api.routers import main_router
 from app.core.config import settings
@@ -16,6 +17,8 @@ app = FastAPI(
     title=settings.app_title,
     description=settings.description
 )
+
+app.mount("/admin/statics", StaticFiles(directory="static/admin"), name="admin_statics")
 
 # Include the main router with all defined endpoints
 app.include_router(main_router)

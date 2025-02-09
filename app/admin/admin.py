@@ -28,7 +28,8 @@ def create_admin(app):
     admin = Admin(
         app=app,
         engine=engine,
-        authentication_backend=auth_backend
+        authentication_backend=auth_backend,
+        base_url='/admin',
     )
     admin.add_view(CategoryAdmin)
     admin.add_view(TopicAdmin)

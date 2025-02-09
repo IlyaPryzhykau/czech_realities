@@ -13,4 +13,8 @@ ENV PYTHONPATH=/app
 RUN pip install --upgrade pip
 RUN pip install -r /app/requirements.txt
 
-CMD ["sh", "-c", "alembic upgrade head; uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+RUN mkdir -p /app/static/admin
+
+RUN cp -r /usr/local/lib/python3.12/site-packages/sqladmin/statics/* /app/static/admin/
+
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"]
