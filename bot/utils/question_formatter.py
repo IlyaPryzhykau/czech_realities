@@ -6,18 +6,27 @@ and answers for sending via Telegram.
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-async def format_question(question: dict) -> tuple:
+async def format_question(
+        question: dict,
+        question_number: int | None = None,
+        total_questions: int | None = None
+) -> tuple:
     """
     Formats a question from the database and returns a tuple:
     (messages, image_answers, reply_markup)
 
-    :param question: Dictionary with question data.
-    :return: (
-      messages: List of message dicts (type='text' or 'photo',
-          content=..., caption=...),
-      image_answers: List of image-based answers (if any),
-      reply_markup: InlineKeyboardMarkup for text-based answers (if any)
-    )
+    :param question: dict
+        Dictionary containing the question data.
+    :param question_number: int | None
+        The current question number in the sequence (1-based index).
+    :param total_questions: int | None
+        The total number of questions in the set.
+    :return: tuple
+        (messages, image_answers, reply_markup)
+        - messages: List of message dictionaries (type='text' or
+            'photo', content=..., caption=...).
+        - image_answers: List of image-based answers (if any).
+        - reply_markup: InlineKeyboardMarkup for text-based answers (if any).
     """
     messages = []
     image_answers = []
@@ -30,8 +39,13 @@ async def format_question(question: dict) -> tuple:
     answers = question.get('answers', [])
     has_image_answers = any(ans.get('image_url') for ans in answers)
 
+    if question_number and total_questions:
+        header_text = f'<b>Otázka {question_number}/{total_questions}</b>\n\n'
+    else:
+        header_text = f'<b>Otázka </b>\n\n'
+
     message_text = (
-        f'🎯 <b>Otázka</b>\n\n'
+        f'🎯 {header_text}'
         f'📌 <b>Téma:</b> {topic_name}\n\n'
         f'❓ <b>Otázka:</b>\n{question_text}\n\n'
     )

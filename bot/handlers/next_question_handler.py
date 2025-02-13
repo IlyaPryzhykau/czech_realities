@@ -36,12 +36,13 @@ async def send_next_question(
     questions = context.user_data.get(questions_key, [])
 
     index = context.user_data.get('current_question_index', 0)
+    total_questions = context.user_data.get('total_questions', len(questions))
 
     logger.debug('DEBUG: Current index %s, total questions: %s, mode: %s',
-                 index, len(questions), mode)
+                 index, total_questions, mode)
 
     # If no more questions left, show final results
-    if index >= len(questions):
+    if index >= total_questions:
         await show_results(query, context)
         return
 
@@ -49,6 +50,7 @@ async def send_next_question(
     context.user_data['current_question_index'] = index
 
     question = questions[index]
+    question_number = index + 1
     logger.debug('DEBUG: Sending question: %s', question)
 
     # Store correct answer in user_data
@@ -59,7 +61,8 @@ async def send_next_question(
 
     context.user_data['question_mode'] = mode
 
-    messages, answer_messages, reply_markup = await format_question(question)
+    messages, answer_messages, reply_markup = \
+        await format_question(question, question_number, total_questions)
 
     # Send the main question part(s)
     sent_msg = None
