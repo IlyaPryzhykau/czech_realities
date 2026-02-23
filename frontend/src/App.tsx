@@ -109,18 +109,44 @@ function App() {
         </header>
 
         {view === 'landing' && (
-          <section className="mode-grid">
-            {(Object.keys(modeMeta) as GameMode[]).map((modeKey) => (
-              <article className="mode-card glass" key={modeKey}>
-                <span className="badge">{modeMeta[modeKey].badge}</span>
-                <h2>{modeMeta[modeKey].title}</h2>
-                <p>{modeMeta[modeKey].description}</p>
-                <button onClick={() => void startMode(modeKey)} type="button">
-                  Spustit režim
-                </button>
-              </article>
-            ))}
-          </section>
+          <>
+            <section className="glass panel intro-panel">
+              <h2>Databanka testových úloh z českých reálií</h2>
+              <p>Vítej! Tento trénink je určen pro přípravu na zkoušku z českých reálií.</p>
+
+              <div className="intro-grid">
+                <div>
+                  <h3>Co najdeš v aplikaci</h3>
+                  <ul>
+                    <li><strong>Výběr tématu</strong> – procvičování v konkrétní oblasti.</li>
+                    <li><strong>Náhodná otázka</strong> – rychlé ověření znalostí.</li>
+                    <li><strong>Náhodný testový lístek</strong> – mix otázek napříč tématy.</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3>Jak funguje otázka</h3>
+                  <ul>
+                    <li>Každá otázka má zadání a možnosti odpovědí.</li>
+                    <li>Správná je vždy jen jedna odpověď.</li>
+                    <li>Zadání může obsahovat text i obrázek.</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <section className="mode-grid">
+              {(Object.keys(modeMeta) as GameMode[]).map((modeKey) => (
+                <article className="mode-card glass" key={modeKey}>
+                  <span className="badge">{modeMeta[modeKey].badge}</span>
+                  <h2>{modeMeta[modeKey].title}</h2>
+                  <p>{modeMeta[modeKey].description}</p>
+                  <button onClick={() => void startMode(modeKey)} type="button">
+                    Spustit režim
+                  </button>
+                </article>
+              ))}
+            </section>
+          </>
         )}
 
         {view === 'topics' && (

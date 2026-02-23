@@ -118,6 +118,21 @@ p {
   color: var(--text-soft);
 }
 
+h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+li {
+  margin-bottom: 6px;
+  color: var(--text-soft);
+}
+
 button {
   border: 0;
   border-radius: 14px;
@@ -169,6 +184,16 @@ button.ghost,
   padding: 20px;
   display: grid;
   gap: 18px;
+}
+
+.intro-panel {
+  gap: 14px;
+}
+
+.intro-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .panel-head {
@@ -248,7 +273,8 @@ button.ghost,
   }
 
   .topic-grid,
-  .options-grid {
+  .options-grid,
+  .intro-grid {
     grid-template-columns: 1fr;
   }
 
