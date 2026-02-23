@@ -12,6 +12,7 @@ export interface QuestionOption {
   id: string;
   text: string;
   isCorrect?: boolean;
+  correct?: boolean;
 }
 
 export interface Question {

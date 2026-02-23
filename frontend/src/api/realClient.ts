@@ -54,10 +54,18 @@ const mapTopic = (rawTopic: unknown, index = 0): Topic => {
 
 const mapAnswer = (rawAnswer: unknown, index = 0): QuestionOption => {
   const item = (rawAnswer ?? {}) as AnyRecord;
+  const isCorrect =
+    typeof item.is_correct === 'boolean'
+      ? item.is_correct
+      : typeof item.correct === 'boolean'
+        ? item.correct
+        : undefined;
+
   return {
     id: String(getNumber(item.id) ?? item.id ?? `opt-${index + 1}`),
     text: getText(item.text) || getText(item.name) || `Varianta ${index + 1}`,
-    isCorrect: typeof item.is_correct === 'boolean' ? item.is_correct : undefined,
+    isCorrect,
+    correct: isCorrect,
   };
 };
 

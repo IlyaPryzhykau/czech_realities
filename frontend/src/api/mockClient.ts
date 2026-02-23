@@ -40,10 +40,10 @@ const questionBank: Record<string, Omit<Question, 'topicId'>[]> = {
       imageUrl:
         'https://images.unsplash.com/photo-1541849546-216549ae216d?auto=format&fit=crop&w=1200&q=80',
       options: [
-        { id: 'a', text: 'Karel IV.' },
-        { id: 'b', text: 'Václav I.' },
-        { id: 'c', text: 'Rudolf II.' },
-        { id: 'd', text: 'Jiří z Poděbrad' },
+        { id: 'a', text: 'Karel IV.', isCorrect: true, correct: true },
+        { id: 'b', text: 'Václav I.', isCorrect: false, correct: false },
+        { id: 'c', text: 'Rudolf II.', isCorrect: false, correct: false },
+        { id: 'd', text: 'Jiří z Poděbrad', isCorrect: false, correct: false },
       ],
     },
   ],
@@ -54,10 +54,10 @@ const questionBank: Record<string, Omit<Question, 'topicId'>[]> = {
       imageUrl:
         'https://images.unsplash.com/photo-1519677100203-a0e668c92439?auto=format&fit=crop&w=1200&q=80',
       options: [
-        { id: 'a', text: 'Dunaj' },
-        { id: 'b', text: 'Vltava' },
-        { id: 'c', text: 'Labe' },
-        { id: 'd', text: 'Morava' },
+        { id: 'a', text: 'Dunaj', isCorrect: false, correct: false },
+        { id: 'b', text: 'Vltava', isCorrect: true, correct: true },
+        { id: 'c', text: 'Labe', isCorrect: false, correct: false },
+        { id: 'd', text: 'Morava', isCorrect: false, correct: false },
       ],
     },
   ],
@@ -68,10 +68,10 @@ const questionBank: Record<string, Omit<Question, 'topicId'>[]> = {
       imageUrl:
         'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
       options: [
-        { id: 'a', text: 'Svíčková' },
-        { id: 'b', text: 'Gulášová polévka' },
-        { id: 'c', text: 'Bramborák' },
-        { id: 'd', text: 'Koláč' },
+        { id: 'a', text: 'Svíčková', isCorrect: true, correct: true },
+        { id: 'b', text: 'Gulášová polévka', isCorrect: false, correct: false },
+        { id: 'c', text: 'Bramborák', isCorrect: false, correct: false },
+        { id: 'd', text: 'Koláč', isCorrect: false, correct: false },
       ],
     },
   ],
@@ -82,10 +82,10 @@ const questionBank: Record<string, Omit<Question, 'topicId'>[]> = {
       imageUrl:
         'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80',
       options: [
-        { id: 'a', text: 'Krkonoše' },
-        { id: 'b', text: 'Tatry' },
-        { id: 'c', text: 'Alpy' },
-        { id: 'd', text: 'Šumava' },
+        { id: 'a', text: 'Krkonoše', isCorrect: true, correct: true },
+        { id: 'b', text: 'Tatry', isCorrect: false, correct: false },
+        { id: 'c', text: 'Alpy', isCorrect: false, correct: false },
+        { id: 'd', text: 'Šumava', isCorrect: false, correct: false },
       ],
     },
   ],
