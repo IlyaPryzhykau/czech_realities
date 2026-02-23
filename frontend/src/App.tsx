@@ -3,10 +3,11 @@ import './App.css';
 import { createApiClient } from './api/client';
 import { mockClient } from './api/mockClient';
 import { realApiClient } from './api/realClient';
-import type { GameMode, Question, Topic } from './types';
+import type { GameMode, Question, QuestionOption, Topic } from './types';
 
-type View = 'landing' | 'topics' | 'question';
+type View = 'landing' | 'topics' | 'question' | 'result';
 
+const TOPIC_SESSION_SIZE = 10;
 const useMock = String(import.meta.env.VITE_USE_MOCK ?? 'true').toLowerCase() !== 'false';
 const api = createApiClient(useMock ? mockClient : realApiClient);
 
@@ -28,6 +29,20 @@ const modeMeta: Record<GameMode, { title: string; description: string; badge: st
   },
 };
 
+const buildTopicSession = (questions: Question[], count: number): Question[] => {
+  if (questions.length === 0) return [];
+  const session: Question[] = [];
+  for (let i = 0; i < count; i += 1) {
+    session.push(questions[i % questions.length]);
+  }
+  return session;
+};
+
+const getCorrectOption = (question: Question | null): QuestionOption | null => {
+  if (!question) return null;
+  return question.options.find((opt) => opt.isCorrect === true || opt.correct === true) ?? null;
+};
+
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const fromStorage = localStorage.getItem('theme');
@@ -40,10 +55,19 @@ function App() {
   const [questionQueue, setQuestionQueue] = useState<Question[]>([]);
   const [queueIndex, setQueueIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [scoreCorrect, setScoreCorrect] = useState(0);
+  const [scoreAnswered, setScoreAnswered] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const question = questionQueue[queueIndex] ?? null;
+  const hasAnswered = selectedOption !== null;
+  const isSessionMode = mode === 'classic' || mode === 'debate';
+  const correctOption = getCorrectOption(question);
+  const isSelectedCorrect = Boolean(hasAnswered && correctOption && selectedOption === correctOption.id);
+  const sessionTotal = isSessionMode ? questionQueue.length : scoreAnswered;
+  const currentQuestionNumber = Math.min(queueIndex + 1, Math.max(questionQueue.length, 1));
+  const progressPercent = isSessionMode && sessionTotal > 0 ? (currentQuestionNumber / sessionTotal) * 100 : 0;
 
   useEffect(() => {
     document.body.dataset.theme = theme;
@@ -53,15 +77,22 @@ function App() {
   const headerSubtitle = useMemo(() => {
     if (view === 'landing') return 'Procvičuj české reálie v moderním a přehledném rozhraní.';
     if (view === 'topics') return `Režim: ${modeMeta[mode].title}`;
+    if (view === 'result') return 'Výsledky aktuálního kola';
     return selectedTopic ? `Téma: ${selectedTopic.title}` : `Režim: ${modeMeta[mode].title}`;
   }, [view, mode, selectedTopic]);
+
+  const resetSession = () => {
+    setQuestionQueue([]);
+    setQueueIndex(0);
+    setSelectedOption(null);
+    setScoreCorrect(0);
+    setScoreAnswered(0);
+  };
 
   const startMode = async (nextMode: GameMode) => {
     setMode(nextMode);
     setSelectedTopic(null);
-    setQuestionQueue([]);
-    setQueueIndex(0);
-    setSelectedOption(null);
+    resetSession();
     setError(null);
 
     if (nextMode === 'classic') {
@@ -84,12 +115,11 @@ function App() {
       if (nextMode === 'timed') {
         const next = await api.getRandomQuestion();
         setQuestionQueue([next]);
-        setQueueIndex(0);
-      } else {
-        const ticket = await api.getRandomTicket();
-        setQuestionQueue(ticket);
-        setQueueIndex(0);
+        return;
       }
+
+      const ticket = await api.getRandomTicket();
+      setQuestionQueue(ticket);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Nepodařilo se načíst otázku.');
     } finally {
@@ -99,14 +129,13 @@ function App() {
 
   const pickTopic = async (topic: Topic) => {
     setSelectedTopic(topic);
-    setSelectedOption(null);
+    resetSession();
     setError(null);
     setIsLoading(true);
     setView('question');
     try {
       const questions = await api.getQuestionsByTopic(topic.id);
-      setQuestionQueue(questions);
-      setQueueIndex(0);
+      setQuestionQueue(buildTopicSession(questions, TOPIC_SESSION_SIZE));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Nepodařilo se načíst otázky pro téma.');
     } finally {
@@ -114,34 +143,38 @@ function App() {
     }
   };
 
+  const answerQuestion = (optionId: string) => {
+    if (!question || hasAnswered) return;
+
+    setSelectedOption(optionId);
+    setScoreAnswered((prev) => prev + 1);
+
+    const selected = question.options.find((opt) => opt.id === optionId);
+    const selectedIsCorrect = selected?.isCorrect === true || selected?.correct === true;
+    if (selectedIsCorrect) {
+      setScoreCorrect((prev) => prev + 1);
+    }
+  };
+
   const nextQuestion = async () => {
+    if (!hasAnswered) return;
+
     setSelectedOption(null);
     setError(null);
 
-    if (mode !== 'timed' && queueIndex < questionQueue.length - 1) {
-      setQueueIndex((prev) => prev + 1);
+    if (mode !== 'timed') {
+      if (queueIndex < questionQueue.length - 1) {
+        setQueueIndex((prev) => prev + 1);
+      } else {
+        setView('result');
+      }
       return;
     }
 
     setIsLoading(true);
     try {
-      if (mode === 'timed') {
-        const next = await api.getRandomQuestion();
-        setQuestionQueue([next]);
-        setQueueIndex(0);
-        return;
-      }
-
-      if (mode === 'debate') {
-        const ticket = await api.getRandomTicket();
-        setQuestionQueue(ticket);
-        setQueueIndex(0);
-        return;
-      }
-
-      if (!selectedTopic) return;
-      const questions = await api.getQuestionsByTopic(selectedTopic.id);
-      setQuestionQueue(questions);
+      const next = await api.getRandomQuestion();
+      setQuestionQueue([next]);
       setQueueIndex(0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Nepodařilo se načíst další otázku.');
@@ -149,6 +182,21 @@ function App() {
       setIsLoading(false);
     }
   };
+
+  const getOptionClassName = (opt: QuestionOption): string => {
+    const isSelected = selectedOption === opt.id;
+    const isCorrect = opt.isCorrect === true || opt.correct === true;
+
+    if (!hasAnswered) {
+      return `option-btn ${isSelected ? 'selected' : ''}`;
+    }
+
+    if (isCorrect) return 'option-btn correct';
+    if (isSelected && !isCorrect) return 'option-btn wrong';
+    return 'option-btn answered';
+  };
+
+  const scorePercent = sessionTotal > 0 ? Math.round((scoreCorrect / sessionTotal) * 100) : 0;
 
   return (
     <div className="app-shell">
@@ -257,6 +305,18 @@ function App() {
               </button>
             </div>
 
+            {isSessionMode && question && (
+              <div className="session-stats">
+                <div className="stats-row">
+                  <span>Otázka {currentQuestionNumber}/{sessionTotal}</span>
+                  <span>Správně: {scoreCorrect}/{scoreAnswered}</span>
+                </div>
+                <div className="progress-track" aria-label="Průběh testu">
+                  <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
+                </div>
+              </div>
+            )}
+
             {error && <p className="muted">⚠️ {error}</p>}
 
             {question?.imageUrl && <img src={question.imageUrl} alt="Ilustrace otázky" className="question-image" />}
@@ -265,21 +325,58 @@ function App() {
               {(question?.options ?? []).map((opt) => (
                 <button
                   key={opt.id}
-                  className={`option-btn ${selectedOption === opt.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedOption(opt.id)}
+                  className={getOptionClassName(opt)}
+                  onClick={() => answerQuestion(opt.id)}
                   type="button"
+                  disabled={hasAnswered}
                 >
                   {opt.text}
                 </button>
               ))}
             </div>
 
+            {hasAnswered && question && (
+              <div className={`answer-feedback ${isSelectedCorrect ? 'ok' : 'bad'}`}>
+                <strong>{isSelectedCorrect ? '✅ Správně!' : '❌ Nesprávně.'}</strong>
+                {!isSelectedCorrect && correctOption && (
+                  <p>Správná odpověď: <strong>{correctOption.text}</strong></p>
+                )}
+              </div>
+            )}
+
+            <div className="actions end">
+              {hasAnswered && (
+                <button onClick={() => void nextQuestion()} disabled={isLoading} type="button">
+                  {isLoading
+                    ? 'Načítám…'
+                    : mode !== 'timed' && queueIndex >= questionQueue.length - 1
+                      ? 'Zobrazit výsledek'
+                      : 'Další'}
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+
+        {view === 'result' && (
+          <section className="glass panel result-panel">
+            <h2>Výsledek kola</h2>
+            <p className="result-score">{scoreCorrect}/{sessionTotal}</p>
+            <p className="result-percent">Úspěšnost: {scorePercent}%</p>
+
             <div className="actions">
-              <button className="ghost" onClick={() => setSelectedOption(null)} type="button">
-                Reset
-              </button>
-              <button onClick={() => void nextQuestion()} disabled={isLoading} type="button">
-                {isLoading ? 'Načítám…' : 'Další otázka'}
+              {mode === 'classic' && selectedTopic && (
+                <button onClick={() => void pickTopic(selectedTopic)} type="button">
+                  Zopakovat téma
+                </button>
+              )}
+              {mode === 'debate' && (
+                <button onClick={() => void startMode('debate')} type="button">
+                  Nový testový lístek
+                </button>
+              )}
+              <button className="ghost" onClick={() => setView('landing')} type="button">
+                Na úvod
               </button>
             </div>
           </section>

@@ -15,8 +15,9 @@ A FastAPI-based application for managing **Categories**, **Topics**, **Questions
 8. [Running the Application](#running-the-application)  
 9. [Admin Panel](#admin-panel)  
 10. [API Endpoints](#api-endpoints)  
-11. [Project Structure](#project-structure)
-12. [License](#license)
+11. [Frontend Quiz Modes (v1.1 UX)](#frontend-quiz-modes-v11-ux)
+12. [Project Structure](#project-structure)
+13. [License](#license)
 
 ---
 
@@ -179,6 +180,38 @@ Below is a brief overview (not exhaustive). For full details, check the **intera
   - `GET /answer/{id}` - Get answer by id
   - `PATCH /answer/{id}` - Update answer (superuser required)
   - `DELETE /answer/{id}` - Delete answer (superuser required)
+
+---
+
+## Frontend Quiz Modes (v1.1 UX)
+
+Frontend (`frontend/`) now provides immediate answer feedback and session scoring in the training flows.
+
+### Shared UX behavior
+
+- After selecting an answer, the option is immediately evaluated and visually highlighted:
+  - correct answer → green highlight
+  - selected wrong answer → red highlight
+- If the selected answer is wrong, the UI explicitly shows the correct answer text.
+- The **"Další"** button appears only after an answer is selected.
+- Correctness is read from backend answer payload fields (`is_correct` / `correct`).
+
+### Mode behavior
+
+- **Klasický (topic flow)**
+  - User picks a topic.
+  - Session is fixed to **10 questions**.
+  - Progress UI includes question number, progress bar, and in-session counter (`správně / zodpovězeno`).
+  - After question 10, a result screen is shown with `correct/total` and `%`.
+
+- **Náhodný testový lístek (ticket flow)**
+  - Uses the full set returned by `GET /question/random-ticket`.
+  - Progress UI includes question number, progress bar, and in-session counter.
+  - After the last question, a result screen is shown with `correct/total` and `%`.
+
+- **Náhodná otázka (random-one)**
+  - Single-question loop from `GET /question/random-one`.
+  - Immediate feedback is shown for each answer; next question loads on "Další".
 
 ---
 
