@@ -271,12 +271,19 @@ body[data-theme='dark'] .badge {
 
 .topic-card {
   text-align: left;
-  background: linear-gradient(140deg, color-mix(in srgb, var(--topic-color), #fff 30%), rgba(255, 255, 255, 0.42));
-  border: 1px solid color-mix(in srgb, var(--topic-color), transparent 45%);
+  background: linear-gradient(150deg, rgba(248, 238, 225, 0.96), rgba(245, 230, 216, 0.94));
+  border: 1px solid rgba(193, 153, 135, 0.4);
   color: var(--text-main);
   display: flex;
+  align-items: center;
   gap: 12px;
   padding: 14px;
+}
+
+.topic-card:hover,
+.topic-card:focus-visible {
+  border-color: rgba(183, 132, 121, 0.7);
+  box-shadow: 0 10px 24px rgba(183, 132, 121, 0.18);
 }
 
 body[data-theme='dark'] .topic-card {
@@ -285,13 +292,14 @@ body[data-theme='dark'] .topic-card {
   color: var(--text-main);
 }
 
-.topic-icon {
-  font-size: 1.35rem;
+body[data-theme='dark'] .topic-card:hover,
+body[data-theme='dark'] .topic-card:focus-visible {
+  border-color: rgba(171, 185, 216, 0.62);
+  box-shadow: 0 10px 24px rgba(10, 16, 28, 0.38);
 }
 
-.topic-card p {
-  margin-top: 4px;
-  font-size: 0.9rem;
+.topic-icon {
+  font-size: 1.35rem;
 }
 
 .question-image {

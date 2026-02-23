@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 import { createApiClient } from './api/client';
 import { mockClient } from './api/mockClient';
@@ -315,15 +315,11 @@ function App() {
                   <button
                     key={topic.id}
                     className="topic-card"
-                    style={{ '--topic-color': topic.color } as CSSProperties}
                     onClick={() => void pickTopic(topic)}
                     type="button"
                   >
                     <span className="topic-icon">{topic.icon}</span>
-                    <div>
-                      <strong>{topic.title}</strong>
-                      <p>{topic.description}</p>
-                    </div>
+                    <strong>{topic.title}</strong>
                   </button>
                 ))}
               </div>
