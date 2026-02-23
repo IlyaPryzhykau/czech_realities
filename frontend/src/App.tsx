@@ -5,7 +5,9 @@ import { mockClient } from './api/mockClient';
 import { realApiClient } from './api/realClient';
 import type { GameMode, Question, QuestionOption, Topic } from './types';
 
-type View = 'landing' | 'topics' | 'question' | 'result';
+type View = 'landing' | 'topics' | 'question' | 'result' | 'legal';
+type LegalSection = 'privacy' | 'terms' | 'cookies';
+type CookieConsent = 'necessary' | 'all';
 
 const TOPIC_SESSION_SIZE = 10;
 const useMock = String(import.meta.env.VITE_USE_MOCK ?? 'true').toLowerCase() !== 'false';
@@ -60,6 +62,11 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [failedOptionImages, setFailedOptionImages] = useState<Record<string, boolean>>({});
+  const [cookieConsent, setCookieConsent] = useState<CookieConsent | null>(() => {
+    const stored = localStorage.getItem('cookie-consent');
+    return stored === 'necessary' || stored === 'all' ? stored : null;
+  });
+  const [legalSection, setLegalSection] = useState<LegalSection>('privacy');
 
   const question = questionQueue[queueIndex] ?? null;
   const hasImageOptions = Boolean(question?.options?.some((opt) => Boolean(opt.imageUrl)));
@@ -84,6 +91,7 @@ function App() {
     if (view === 'landing') return 'Moderní příprava na test z českých reálií.';
     if (view === 'topics') return `Režim: ${modeMeta[mode].title}`;
     if (view === 'result') return 'Výsledky aktuálního kola';
+    if (view === 'legal') return 'Právní informace a zásady používání služby';
     return selectedTopic ? `Téma: ${selectedTopic.title}` : `Režim: ${modeMeta[mode].title}`;
   }, [view, mode, selectedTopic]);
 
@@ -208,6 +216,17 @@ function App() {
     return opt.imageUrl ? 'Obrázková odpověď' : 'Bez textu';
   };
 
+  const acceptCookies = (value: CookieConsent) => {
+    setCookieConsent(value);
+    localStorage.setItem('cookie-consent', value);
+  };
+
+  const openLegal = (section: LegalSection) => {
+    setLegalSection(section);
+    setView('legal');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const scorePercent = sessionTotal > 0 ? Math.round((scoreCorrect / sessionTotal) * 100) : 0;
 
   return (
@@ -295,6 +314,18 @@ function App() {
                   </button>
                 </article>
               ))}
+            </section>
+
+            <section className="soft-card panel telegram-panel">
+              <div>
+                <h2>Telegram bot</h2>
+                <p>
+                  Trénuj i v mobilu přes Telegram. Naskenuj QR kód a otevři <strong>@CZECH_REALITIES_BOT</strong>.
+                </p>
+              </div>
+              <article className="telegram-card">
+                <img src="/telegram-bot-qr.jpg" alt="QR kód pro Telegram bot @CZECH_REALITIES_BOT" />
+              </article>
             </section>
           </>
         )}
@@ -440,7 +471,115 @@ function App() {
             </div>
           </section>
         )}
+
+        {view === 'legal' && (
+          <section className="soft-card panel legal-panel">
+            <div className="panel-head legal-head">
+              <h2>Legal</h2>
+              <button className="ghost" onClick={() => setView('landing')} type="button">
+                ← Na úvod
+              </button>
+            </div>
+
+            <div className="legal-tabs">
+              <button
+                className={legalSection === 'privacy' ? '' : 'ghost'}
+                onClick={() => setLegalSection('privacy')}
+                type="button"
+              >
+                Privacy
+              </button>
+              <button
+                className={legalSection === 'terms' ? '' : 'ghost'}
+                onClick={() => setLegalSection('terms')}
+                type="button"
+              >
+                Terms
+              </button>
+              <button
+                className={legalSection === 'cookies' ? '' : 'ghost'}
+                onClick={() => setLegalSection('cookies')}
+                type="button"
+              >
+                Cookies
+              </button>
+            </div>
+
+            {legalSection === 'privacy' && (
+              <article className="legal-card">
+                <h3>Privacy Policy</h3>
+                <p>
+                  Respektujeme vaše soukromí. Aplikace ukládá pouze technická data potřebná pro provoz,
+                  například volbu vzhledu a cookie preference. Osobní údaje nepředáváme třetím stranám bez
+                  zákonného důvodu.
+                </p>
+                <p>
+                  Pokud máte dotaz k ochraně osobních údajů, napište na <a href="mailto:tuarone@gmail.com">tuarone@gmail.com</a>.
+                </p>
+              </article>
+            )}
+
+            {legalSection === 'terms' && (
+              <article className="legal-card">
+                <h3>Terms of Use</h3>
+                <p>
+                  Služba slouží pro vzdělávací a tréninkové účely. Obsah se průběžně aktualizuje a může obsahovat
+                  nepřesnosti. Používáním aplikace souhlasíte s tím, že provozovatel nenese odpovědnost za škody
+                  vzniklé použitím obsahu mimo zamýšlený účel.
+                </p>
+                <p>
+                  Pro obchodní nebo právní dotazy použijte kontakt <a href="mailto:tuarone@gmail.com">tuarone@gmail.com</a>.
+                </p>
+              </article>
+            )}
+
+            {legalSection === 'cookies' && (
+              <article className="legal-card">
+                <h3>Cookies Policy</h3>
+                <p>
+                  Web používá nezbytné cookies pro základní funkce (například uložené nastavení tématu). Po vašem
+                  souhlasu mohou být aktivovány i volitelné cookies pro zlepšení uživatelského zážitku.
+                </p>
+                <p>
+                  Své rozhodnutí můžete kdykoliv změnit odstraněním cookie preference v prohlížeči nebo přes
+                  kontaktní email <a href="mailto:tuarone@gmail.com">tuarone@gmail.com</a>.
+                </p>
+              </article>
+            )}
+          </section>
+        )}
+
+        <footer className="soft-card footer">
+          <button className="ghost" onClick={() => openLegal('privacy')} type="button">
+            Privacy
+          </button>
+          <button className="ghost" onClick={() => openLegal('terms')} type="button">
+            Terms
+          </button>
+          <button className="ghost" onClick={() => openLegal('cookies')} type="button">
+            Cookies
+          </button>
+        </footer>
       </main>
+
+      {!cookieConsent && (
+        <aside className="cookie-banner soft-card" role="dialog" aria-label="Cookie notice">
+          <div>
+            <strong>Cookies na webu</strong>
+            <p>
+              Používáme nezbytné cookies pro správné fungování webu. Volitelně můžete povolit i všechny cookies.
+            </p>
+          </div>
+          <div className="cookie-actions">
+            <button className="ghost" onClick={() => acceptCookies('necessary')} type="button">
+              Только необходимые
+            </button>
+            <button onClick={() => acceptCookies('all')} type="button">
+              Принять всё
+            </button>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }
