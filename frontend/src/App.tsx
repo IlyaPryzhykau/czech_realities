@@ -13,19 +13,19 @@ const api = createApiClient(useMock ? mockClient : realApiClient);
 
 const modeMeta: Record<GameMode, { title: string; description: string; badge: string }> = {
   classic: {
-    title: 'Klasický',
-    description: 'Výběr tématu a procvičování otázek v dané oblasti.',
+    title: 'Klasický režim',
+    description: 'Vyber téma a procvičuj otázky krok za krokem.',
     badge: 'Podle tématu',
   },
   timed: {
     title: 'Náhodná otázka',
-    description: 'Rychlý trénink: aplikace vygeneruje jednu náhodnou otázku.',
-    badge: 'random-one',
+    description: 'Rychlá příprava: jedna nová otázka na kliknutí.',
+    badge: 'Rychlý trénink',
   },
   debate: {
     title: 'Náhodný testový lístek',
-    description: 'Balíček otázek napříč tématy (random-ticket).',
-    badge: 'random-ticket',
+    description: 'Sada otázek napříč tématy jako u zkoušky.',
+    badge: 'Kompletní lístek',
   },
 };
 
@@ -46,7 +46,7 @@ const getCorrectOption = (question: Question | null): QuestionOption | null => {
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const fromStorage = localStorage.getItem('theme');
-    return fromStorage === 'light' ? 'light' : 'dark';
+    return fromStorage === 'dark' ? 'dark' : 'light';
   });
   const [view, setView] = useState<View>('landing');
   const [mode, setMode] = useState<GameMode>('classic');
@@ -62,6 +62,7 @@ function App() {
   const [failedOptionImages, setFailedOptionImages] = useState<Record<string, boolean>>({});
 
   const question = questionQueue[queueIndex] ?? null;
+  const hasImageOptions = Boolean(question?.options?.some((opt) => Boolean(opt.imageUrl)));
   const hasAnswered = selectedOption !== null;
   const isSessionMode = mode === 'classic' || mode === 'debate';
   const correctOption = getCorrectOption(question);
@@ -80,7 +81,7 @@ function App() {
   }, [question?.id]);
 
   const headerSubtitle = useMemo(() => {
-    if (view === 'landing') return 'Procvičuj české reálie v moderním a přehledném rozhraní.';
+    if (view === 'landing') return 'Moderní příprava na test z českých reálií.';
     if (view === 'topics') return `Režim: ${modeMeta[mode].title}`;
     if (view === 'result') return 'Výsledky aktuálního kola';
     return selectedTopic ? `Téma: ${selectedTopic.title}` : `Režim: ${modeMeta[mode].title}`;
@@ -216,7 +217,7 @@ function App() {
       <div className="bg-orb orb-3" />
 
       <main className="container">
-        <header className="topbar glass">
+        <header className="topbar soft-card">
           <div>
             <h1>České reálie</h1>
             <p>{headerSubtitle}</p>
@@ -226,31 +227,58 @@ function App() {
             onClick={() => setTheme((v) => (v === 'dark' ? 'light' : 'dark'))}
             type="button"
           >
-            {theme === 'dark' ? '☀️ Světlý' : '🌙 Tmavý'}
+            {theme === 'dark' ? '☀️ Světlý vzhled' : '🌙 Večerní vzhled'}
           </button>
         </header>
 
         {view === 'landing' && (
           <>
-            <section className="glass panel intro-panel">
-              <h2>Databanka testových úloh z českých reálií</h2>
-              <p>Vítej! Tento trénink je určen pro přípravu na zkoušku z českých reálií.</p>
+            <section className="soft-card panel intro-panel">
+              <h2>Jak aplikace funguje</h2>
+              <p>
+                Vítej v přípravě na zkoušku z českých reálií. Vyber si režim podle toho, kolik máš času: od
+                rychlé jedné otázky až po celý testový lístek.
+              </p>
+
+              <div className="intro-kpi-grid">
+                <article className="kpi-card">
+                  <span className="kpi-label">Režimy</span>
+                  <strong>3 typy tréninku</strong>
+                  <p>Klasický, náhodná otázka a náhodný testový lístek.</p>
+                </article>
+                <article className="kpi-card">
+                  <span className="kpi-label">Struktura</span>
+                  <strong>Jasný průběh otázky</strong>
+                  <p>Nejdřív otázka, potom volba odpovědi a okamžitá zpětná vazba.</p>
+                </article>
+                <article className="kpi-card">
+                  <span className="kpi-label">Důležité</span>
+                  <strong>Počítá se úspěšnost</strong>
+                  <p>Během kola vidíš počet správných odpovědí i průběh.</p>
+                </article>
+              </div>
 
               <div className="intro-grid">
                 <div>
-                  <h3>Co najdeš v aplikaci</h3>
+                  <h3>Režimy přípravy</h3>
                   <ul>
-                    <li><strong>Výběr tématu</strong> – endpoint <code>/question/by-topic/{'{id}'}</code>.</li>
-                    <li><strong>Náhodná otázka</strong> – endpoint <code>/question/random-one</code>.</li>
-                    <li><strong>Náhodný testový lístek</strong> – endpoint <code>/question/random-ticket</code>.</li>
+                    <li>
+                      <strong>Klasický režim:</strong> vybereš téma a procvičíš sérii otázek.
+                    </li>
+                    <li>
+                      <strong>Náhodná otázka:</strong> ideální na krátké opakování během dne.
+                    </li>
+                    <li>
+                      <strong>Náhodný testový lístek:</strong> mix témat podobný reálné zkoušce.
+                    </li>
                   </ul>
                 </div>
                 <div>
-                  <h3>Data source</h3>
+                  <h3>Jak je postavená otázka</h3>
                   <ul>
-                    <li>Aktivní client: <strong>{useMock ? 'mockClient' : 'realApiClient'}</strong>.</li>
-                    <li>Pro produkci nastav <code>VITE_USE_MOCK=false</code>.</li>
-                    <li>Base URL: <code>{String(import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000')}</code>.</li>
+                    <li>Každá otázka obsahuje zadání a více variant odpovědí.</li>
+                    <li>Po výběru se hned zobrazí, zda je odpověď správná.</li>
+                    <li>U obrázkových variant se zvýrazní správná možnost stejně jako u textu.</li>
                   </ul>
                 </div>
               </div>
@@ -258,7 +286,7 @@ function App() {
 
             <section className="mode-grid">
               {(Object.keys(modeMeta) as GameMode[]).map((modeKey) => (
-                <article className="mode-card glass" key={modeKey}>
+                <article className="mode-card soft-card" key={modeKey}>
                   <span className="badge">{modeMeta[modeKey].badge}</span>
                   <h2>{modeMeta[modeKey].title}</h2>
                   <p>{modeMeta[modeKey].description}</p>
@@ -272,7 +300,7 @@ function App() {
         )}
 
         {view === 'topics' && (
-          <section className="glass panel">
+          <section className="soft-card panel">
             <div className="panel-head">
               <h2>Vyber téma</h2>
               <button className="ghost" onClick={() => setView('landing')} type="button">
@@ -304,7 +332,7 @@ function App() {
         )}
 
         {view === 'question' && (
-          <section className="glass panel question-panel">
+          <section className="soft-card panel question-panel">
             <div className="panel-head">
               <h2>{question?.prompt ?? (isLoading ? 'Načítám otázku…' : 'Otázka není dostupná')}</h2>
               <button
@@ -330,7 +358,9 @@ function App() {
 
             {error && <p className="muted">⚠️ {error}</p>}
 
-            {question?.imageUrl && <img src={question.imageUrl} alt="Ilustrace otázky" className="question-image" />}
+            {question?.imageUrl && !hasImageOptions && (
+              <img src={question.imageUrl} alt="Ilustrace otázky" className="question-image" />
+            )}
 
             <div className="options-grid">
               {(question?.options ?? []).map((opt) => {
@@ -392,7 +422,7 @@ function App() {
         )}
 
         {view === 'result' && (
-          <section className="glass panel result-panel">
+          <section className="soft-card panel result-panel">
             <h2>Výsledek kola</h2>
             <p className="result-score">{scoreCorrect}/{sessionTotal}</p>
             <p className="result-percent">Úspěšnost: {scorePercent}%</p>
