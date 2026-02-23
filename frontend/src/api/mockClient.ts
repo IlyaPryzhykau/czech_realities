@@ -4,29 +4,29 @@ import type { GameMode, Question, Topic } from '../types';
 const topics: Topic[] = [
   {
     id: 'history',
-    title: 'History & Culture',
-    description: 'Legends, events, and people that shaped Czechia.',
+    title: 'Historie a kultura',
+    description: 'Legendy, události a osobnosti, které formovaly Česko.',
     icon: '🏰',
     color: '#8b5cf6',
   },
   {
     id: 'cities',
-    title: 'Cities & Places',
-    description: 'From Prague streets to hidden Moravian gems.',
+    title: 'Města a místa',
+    description: 'Od pražských ulic po skryté moravské poklady.',
     icon: '🌆',
     color: '#06b6d4',
   },
   {
     id: 'food',
-    title: 'Cuisine',
-    description: 'Traditional dishes, drinks, and local favorites.',
+    title: 'Kuchyně',
+    description: 'Tradiční jídla, nápoje a místní oblíbené speciality.',
     icon: '🥨',
     color: '#f97316',
   },
   {
     id: 'nature',
-    title: 'Nature',
-    description: 'Mountains, forests, rivers, and national parks.',
+    title: 'Příroda',
+    description: 'Hory, lesy, řeky a národní parky.',
     icon: '🌲',
     color: '#22c55e',
   },
@@ -36,27 +36,27 @@ const questionBank: Record<string, Omit<Question, 'topicId'>[]> = {
   history: [
     {
       id: 'h-1',
-      prompt: 'Which ruler commissioned Charles Bridge in Prague?',
+      prompt: 'Který panovník nechal postavit Karlův most v Praze?',
       imageUrl:
         'https://images.unsplash.com/photo-1541849546-216549ae216d?auto=format&fit=crop&w=1200&q=80',
       options: [
-        { id: 'a', text: 'Charles IV' },
-        { id: 'b', text: 'Wenceslaus I' },
-        { id: 'c', text: 'Rudolf II' },
-        { id: 'd', text: 'George of Poděbrady' },
+        { id: 'a', text: 'Karel IV.' },
+        { id: 'b', text: 'Václav I.' },
+        { id: 'c', text: 'Rudolf II.' },
+        { id: 'd', text: 'Jiří z Poděbrad' },
       ],
     },
   ],
   cities: [
     {
       id: 'c-1',
-      prompt: 'What river flows through Prague?',
+      prompt: 'Která řeka protéká Prahou?',
       imageUrl:
         'https://images.unsplash.com/photo-1519677100203-a0e668c92439?auto=format&fit=crop&w=1200&q=80',
       options: [
-        { id: 'a', text: 'Danube' },
+        { id: 'a', text: 'Dunaj' },
         { id: 'b', text: 'Vltava' },
-        { id: 'c', text: 'Elbe' },
+        { id: 'c', text: 'Labe' },
         { id: 'd', text: 'Morava' },
       ],
     },
@@ -64,12 +64,12 @@ const questionBank: Record<string, Omit<Question, 'topicId'>[]> = {
   food: [
     {
       id: 'f-1',
-      prompt: 'Which dish is a traditional Czech beef stew with dumplings?',
+      prompt: 'Které jídlo je tradiční česká hovězí omáčka s knedlíkem?',
       imageUrl:
         'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
       options: [
         { id: 'a', text: 'Svíčková' },
-        { id: 'b', text: 'Goulash soup' },
+        { id: 'b', text: 'Gulášová polévka' },
         { id: 'c', text: 'Bramborák' },
         { id: 'd', text: 'Koláč' },
       ],
@@ -78,7 +78,7 @@ const questionBank: Record<string, Omit<Question, 'topicId'>[]> = {
   nature: [
     {
       id: 'n-1',
-      prompt: 'Which mountain range is along the Czech-Polish border?',
+      prompt: 'Které pohoří leží na česko-polské hranici?',
       imageUrl:
         'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80',
       options: [

@@ -10,19 +10,19 @@ const api = createApiClient(mockClient);
 
 const modeMeta: Record<GameMode, { title: string; description: string; badge: string }> = {
   classic: {
-    title: 'Classic',
-    description: 'No rush, just thoughtful exploration and learning.',
-    badge: 'Balanced',
+    title: 'Klasický',
+    description: 'Bez stresu – promyšlené procvičování a učení.',
+    badge: 'Vyvážený',
   },
   timed: {
-    title: 'Blitz',
-    description: 'Answer fast and keep the momentum high.',
-    badge: 'Fast-paced',
+    title: 'Rychlý',
+    description: 'Odpovídej rychle a drž tempo.',
+    badge: 'Na čas',
   },
   debate: {
-    title: 'Debate',
-    description: 'Pick a side and discuss with your group.',
-    badge: 'Social',
+    title: 'Diskuze',
+    description: 'Vyber si stranu a diskutuj se skupinou.',
+    badge: 'Společenský',
   },
 };
 
@@ -45,9 +45,9 @@ function App() {
   }, [theme]);
 
   const headerSubtitle = useMemo(() => {
-    if (view === 'landing') return 'Discover Czech realities in a polished, playful format.';
-    if (view === 'topics') return `Mode: ${modeMeta[mode].title}`;
-    return selectedTopic ? `Topic: ${selectedTopic.title}` : 'Question time';
+    if (view === 'landing') return 'Procvičuj české reálie v moderním a přehledném rozhraní.';
+    if (view === 'topics') return `Režim: ${modeMeta[mode].title}`;
+    return selectedTopic ? `Téma: ${selectedTopic.title}` : 'Otázka';
   }, [view, mode, selectedTopic]);
 
   const startMode = async (nextMode: GameMode) => {
@@ -96,7 +96,7 @@ function App() {
       <main className="container">
         <header className="topbar glass">
           <div>
-            <h1>Czech Realities</h1>
+            <h1>České reálie</h1>
             <p>{headerSubtitle}</p>
           </div>
           <button
@@ -104,7 +104,7 @@ function App() {
             onClick={() => setTheme((v) => (v === 'dark' ? 'light' : 'dark'))}
             type="button"
           >
-            {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+            {theme === 'dark' ? '☀️ Světlý' : '🌙 Tmavý'}
           </button>
         </header>
 
@@ -116,7 +116,7 @@ function App() {
                 <h2>{modeMeta[modeKey].title}</h2>
                 <p>{modeMeta[modeKey].description}</p>
                 <button onClick={() => void startMode(modeKey)} type="button">
-                  Start mode
+                  Spustit režim
                 </button>
               </article>
             ))}
@@ -126,13 +126,13 @@ function App() {
         {view === 'topics' && (
           <section className="glass panel">
             <div className="panel-head">
-              <h2>Choose your topic</h2>
+              <h2>Vyber téma</h2>
               <button className="ghost" onClick={() => setView('landing')} type="button">
-                ← Back
+                ← Zpět
               </button>
             </div>
             {isLoading ? (
-              <p className="muted">Loading topics…</p>
+              <p className="muted">Načítám témata…</p>
             ) : (
               <div className="topic-grid">
                 {topics.map((topic) => (
@@ -158,13 +158,13 @@ function App() {
         {view === 'question' && (
           <section className="glass panel question-panel">
             <div className="panel-head">
-              <h2>{question?.prompt ?? 'Loading question…'}</h2>
+              <h2>{question?.prompt ?? 'Načítám otázku…'}</h2>
               <button className="ghost" onClick={() => setView('topics')} type="button">
-                Change topic
+                Změnit téma
               </button>
             </div>
 
-            {question?.imageUrl && <img src={question.imageUrl} alt="Question visual" className="question-image" />}
+            {question?.imageUrl && <img src={question.imageUrl} alt="Ilustrace otázky" className="question-image" />}
 
             <div className="options-grid">
               {(question?.options ?? []).map((opt) => (
@@ -184,7 +184,7 @@ function App() {
                 Reset
               </button>
               <button onClick={() => void nextQuestion()} disabled={isLoading} type="button">
-                {isLoading ? 'Loading…' : 'Next question'}
+                {isLoading ? 'Načítám…' : 'Další otázka'}
               </button>
             </div>
           </section>
