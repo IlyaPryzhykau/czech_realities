@@ -61,9 +61,13 @@ const mapAnswer = (rawAnswer: unknown, index = 0): QuestionOption => {
         ? item.correct
         : undefined;
 
+  const imageUrl = extractImageUrl(item);
+  const text = getText(item.text) || getText(item.name);
+
   return {
     id: String(getNumber(item.id) ?? item.id ?? `opt-${index + 1}`),
-    text: getText(item.text) || getText(item.name) || `Varianta ${index + 1}`,
+    text: text || (imageUrl ? '' : `Varianta ${index + 1}`),
+    imageUrl,
     isCorrect,
     correct: isCorrect,
   };

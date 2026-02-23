@@ -59,6 +59,7 @@ function App() {
   const [scoreAnswered, setScoreAnswered] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [failedOptionImages, setFailedOptionImages] = useState<Record<string, boolean>>({});
 
   const question = questionQueue[queueIndex] ?? null;
   const hasAnswered = selectedOption !== null;
@@ -73,6 +74,10 @@ function App() {
     document.body.dataset.theme = theme;
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    setFailedOptionImages({});
+  }, [question?.id]);
 
   const headerSubtitle = useMemo(() => {
     if (view === 'landing') return 'Procvičuj české reálie v moderním a přehledném rozhraní.';
@@ -194,6 +199,12 @@ function App() {
     if (isCorrect) return 'option-btn correct';
     if (isSelected && !isCorrect) return 'option-btn wrong';
     return 'option-btn answered';
+  };
+
+  const getOptionDisplayText = (opt: QuestionOption): string => {
+    const text = opt.text.trim();
+    if (text) return text;
+    return opt.imageUrl ? 'Obrázková odpověď' : 'Bez textu';
   };
 
   const scorePercent = sessionTotal > 0 ? Math.round((scoreCorrect / sessionTotal) * 100) : 0;
@@ -322,24 +333,46 @@ function App() {
             {question?.imageUrl && <img src={question.imageUrl} alt="Ilustrace otázky" className="question-image" />}
 
             <div className="options-grid">
-              {(question?.options ?? []).map((opt) => (
-                <button
-                  key={opt.id}
-                  className={getOptionClassName(opt)}
-                  onClick={() => answerQuestion(opt.id)}
-                  type="button"
-                  disabled={hasAnswered}
-                >
-                  {opt.text}
-                </button>
-              ))}
+              {(question?.options ?? []).map((opt) => {
+                const hasImage = Boolean(opt.imageUrl) && !failedOptionImages[opt.id];
+                const hasText = opt.text.trim().length > 0;
+
+                return (
+                  <button
+                    key={opt.id}
+                    className={getOptionClassName(opt)}
+                    onClick={() => answerQuestion(opt.id)}
+                    type="button"
+                    disabled={hasAnswered}
+                  >
+                    <span className="option-content">
+                      {hasImage && (
+                        <img
+                          src={opt.imageUrl}
+                          alt={hasText ? `Varianta: ${opt.text}` : 'Obrázková varianta odpovědi'}
+                          className="option-image"
+                          onError={() => {
+                            setFailedOptionImages((prev) => ({ ...prev, [opt.id]: true }));
+                          }}
+                        />
+                      )}
+                      {hasText && <span>{opt.text}</span>}
+                      {!hasImage && Boolean(opt.imageUrl) && (
+                        <span className="option-image-fallback">⚠️ Obrázek se nepodařilo načíst</span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             {hasAnswered && question && (
               <div className={`answer-feedback ${isSelectedCorrect ? 'ok' : 'bad'}`}>
                 <strong>{isSelectedCorrect ? '✅ Správně!' : '❌ Nesprávně.'}</strong>
                 {!isSelectedCorrect && correctOption && (
-                  <p>Správná odpověď: <strong>{correctOption.text}</strong></p>
+                  <p>
+                    Správná odpověď: <strong>{getOptionDisplayText(correctOption)}</strong>
+                  </p>
                 )}
               </div>
             )}

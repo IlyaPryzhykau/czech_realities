@@ -256,6 +256,24 @@ button.ghost,
   border: 1px solid transparent;
 }
 
+.option-content {
+  display: grid;
+  gap: 10px;
+}
+
+.option-image {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.option-image-fallback {
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+
 .option-btn.selected {
   border-color: #60a5fa;
   background: rgba(96, 165, 250, 0.18);
