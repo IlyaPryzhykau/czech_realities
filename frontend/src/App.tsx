@@ -324,7 +324,7 @@ function App() {
                 </p>
               </div>
               <article className="telegram-card">
-                <img src="/telegram-bot-qr.jpg" alt="QR kód pro Telegram bot @CZECH_REALITIES_BOT" />
+                <img src="/telegram-bot-qr.jpg?v=2" alt="QR kód pro Telegram bot @CZECH_REALITIES_BOT" />
               </article>
             </section>
           </>
