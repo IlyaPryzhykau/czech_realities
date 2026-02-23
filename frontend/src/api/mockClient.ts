@@ -1,5 +1,5 @@
 import type { ApiClient } from './client';
-import type { GameMode, Question, Topic } from '../types';
+import type { Question, Topic } from '../types';
 
 const topics: Topic[] = [
   {
@@ -83,8 +83,8 @@ const questionBank: Record<string, Omit<Question, 'topicId'>[]> = {
         'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80',
       options: [
         { id: 'a', text: 'Krkonoše' },
-        { id: 'b', text: 'Tatras' },
-        { id: 'c', text: 'Alps' },
+        { id: 'b', text: 'Tatry' },
+        { id: 'c', text: 'Alpy' },
         { id: 'd', text: 'Šumava' },
       ],
     },
@@ -93,21 +93,37 @@ const questionBank: Record<string, Omit<Question, 'topicId'>[]> = {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const withTopic = (topicId: string, item: Omit<Question, 'topicId'>): Question => ({
+  ...item,
+  topicId,
+});
+
 export const mockClient: ApiClient = {
-  async getTopics(_mode: GameMode): Promise<Topic[]> {
-    await sleep(350);
+  async getTopics(): Promise<Topic[]> {
+    await sleep(300);
     return topics;
   },
 
-  async getNextQuestion(topicId: string, _mode: GameMode): Promise<Question> {
-    await sleep(400);
+  async getQuestionsByTopic(topicId: string): Promise<Question[]> {
+    await sleep(350);
+    const pool = questionBank[topicId] ?? questionBank.history;
+    return pool.map((item) => withTopic(topicId, item));
+  },
 
+  async getRandomQuestion(): Promise<Question> {
+    await sleep(350);
+    const topicId = topics[Math.floor(Math.random() * topics.length)].id;
     const pool = questionBank[topicId] ?? questionBank.history;
     const item = pool[Math.floor(Math.random() * pool.length)];
+    return withTopic(topicId, item);
+  },
 
-    return {
-      ...item,
-      topicId,
-    };
+  async getRandomTicket(): Promise<Question[]> {
+    await sleep(400);
+    return topics.map((topic) => {
+      const pool = questionBank[topic.id] ?? questionBank.history;
+      const item = pool[Math.floor(Math.random() * pool.length)];
+      return withTopic(topic.id, item);
+    });
   },
 };

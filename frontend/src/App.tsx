@@ -2,27 +2,29 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import './App.css';
 import { createApiClient } from './api/client';
 import { mockClient } from './api/mockClient';
+import { realApiClient } from './api/realClient';
 import type { GameMode, Question, Topic } from './types';
 
 type View = 'landing' | 'topics' | 'question';
 
-const api = createApiClient(mockClient);
+const useMock = String(import.meta.env.VITE_USE_MOCK ?? 'true').toLowerCase() !== 'false';
+const api = createApiClient(useMock ? mockClient : realApiClient);
 
 const modeMeta: Record<GameMode, { title: string; description: string; badge: string }> = {
   classic: {
     title: 'Klasický',
-    description: 'Bez stresu – promyšlené procvičování a učení.',
-    badge: 'Vyvážený',
+    description: 'Výběr tématu a procvičování otázek v dané oblasti.',
+    badge: 'Podle tématu',
   },
   timed: {
-    title: 'Rychlý',
-    description: 'Odpovídej rychle a drž tempo.',
-    badge: 'Na čas',
+    title: 'Náhodná otázka',
+    description: 'Rychlý trénink: aplikace vygeneruje jednu náhodnou otázku.',
+    badge: 'random-one',
   },
   debate: {
-    title: 'Diskuze',
-    description: 'Vyber si stranu a diskutuj se skupinou.',
-    badge: 'Společenský',
+    title: 'Náhodný testový lístek',
+    description: 'Balíček otázek napříč tématy (random-ticket).',
+    badge: 'random-ticket',
   },
 };
 
@@ -35,9 +37,13 @@ function App() {
   const [mode, setMode] = useState<GameMode>('classic');
   const [topics, setTopics] = useState<Topic[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
-  const [question, setQuestion] = useState<Question | null>(null);
+  const [questionQueue, setQuestionQueue] = useState<Question[]>([]);
+  const [queueIndex, setQueueIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const question = questionQueue[queueIndex] ?? null;
 
   useEffect(() => {
     document.body.dataset.theme = theme;
@@ -47,16 +53,45 @@ function App() {
   const headerSubtitle = useMemo(() => {
     if (view === 'landing') return 'Procvičuj české reálie v moderním a přehledném rozhraní.';
     if (view === 'topics') return `Režim: ${modeMeta[mode].title}`;
-    return selectedTopic ? `Téma: ${selectedTopic.title}` : 'Otázka';
+    return selectedTopic ? `Téma: ${selectedTopic.title}` : `Režim: ${modeMeta[mode].title}`;
   }, [view, mode, selectedTopic]);
 
   const startMode = async (nextMode: GameMode) => {
     setMode(nextMode);
+    setSelectedTopic(null);
+    setQuestionQueue([]);
+    setQueueIndex(0);
+    setSelectedOption(null);
+    setError(null);
+
+    if (nextMode === 'classic') {
+      setIsLoading(true);
+      setView('topics');
+      try {
+        const data = await api.getTopics();
+        setTopics(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Nepodařilo se načíst témata.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    setView('question');
     setIsLoading(true);
-    setView('topics');
     try {
-      const data = await api.getTopics(nextMode);
-      setTopics(data);
+      if (nextMode === 'timed') {
+        const next = await api.getRandomQuestion();
+        setQuestionQueue([next]);
+        setQueueIndex(0);
+      } else {
+        const ticket = await api.getRandomTicket();
+        setQuestionQueue(ticket);
+        setQueueIndex(0);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nepodařilo se načíst otázku.');
     } finally {
       setIsLoading(false);
     }
@@ -65,23 +100,51 @@ function App() {
   const pickTopic = async (topic: Topic) => {
     setSelectedTopic(topic);
     setSelectedOption(null);
+    setError(null);
     setIsLoading(true);
     setView('question');
     try {
-      const next = await api.getNextQuestion(topic.id, mode);
-      setQuestion(next);
+      const questions = await api.getQuestionsByTopic(topic.id);
+      setQuestionQueue(questions);
+      setQueueIndex(0);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nepodařilo se načíst otázky pro téma.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const nextQuestion = async () => {
-    if (!selectedTopic) return;
     setSelectedOption(null);
+    setError(null);
+
+    if (mode !== 'timed' && queueIndex < questionQueue.length - 1) {
+      setQueueIndex((prev) => prev + 1);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const next = await api.getNextQuestion(selectedTopic.id, mode);
-      setQuestion(next);
+      if (mode === 'timed') {
+        const next = await api.getRandomQuestion();
+        setQuestionQueue([next]);
+        setQueueIndex(0);
+        return;
+      }
+
+      if (mode === 'debate') {
+        const ticket = await api.getRandomTicket();
+        setQuestionQueue(ticket);
+        setQueueIndex(0);
+        return;
+      }
+
+      if (!selectedTopic) return;
+      const questions = await api.getQuestionsByTopic(selectedTopic.id);
+      setQuestionQueue(questions);
+      setQueueIndex(0);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nepodařilo se načíst další otázku.');
     } finally {
       setIsLoading(false);
     }
@@ -118,17 +181,17 @@ function App() {
                 <div>
                   <h3>Co najdeš v aplikaci</h3>
                   <ul>
-                    <li><strong>Výběr tématu</strong> – procvičování v konkrétní oblasti.</li>
-                    <li><strong>Náhodná otázka</strong> – rychlé ověření znalostí.</li>
-                    <li><strong>Náhodný testový lístek</strong> – mix otázek napříč tématy.</li>
+                    <li><strong>Výběr tématu</strong> – endpoint <code>/question/by-topic/{'{id}'}</code>.</li>
+                    <li><strong>Náhodná otázka</strong> – endpoint <code>/question/random-one</code>.</li>
+                    <li><strong>Náhodný testový lístek</strong> – endpoint <code>/question/random-ticket</code>.</li>
                   </ul>
                 </div>
                 <div>
-                  <h3>Jak funguje otázka</h3>
+                  <h3>Data source</h3>
                   <ul>
-                    <li>Každá otázka má zadání a možnosti odpovědí.</li>
-                    <li>Správná je vždy jen jedna odpověď.</li>
-                    <li>Zadání může obsahovat text i obrázek.</li>
+                    <li>Aktivní client: <strong>{useMock ? 'mockClient' : 'realApiClient'}</strong>.</li>
+                    <li>Pro produkci nastav <code>VITE_USE_MOCK=false</code>.</li>
+                    <li>Base URL: <code>{String(import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000')}</code>.</li>
                   </ul>
                 </div>
               </div>
@@ -184,11 +247,17 @@ function App() {
         {view === 'question' && (
           <section className="glass panel question-panel">
             <div className="panel-head">
-              <h2>{question?.prompt ?? 'Načítám otázku…'}</h2>
-              <button className="ghost" onClick={() => setView('topics')} type="button">
-                Změnit téma
+              <h2>{question?.prompt ?? (isLoading ? 'Načítám otázku…' : 'Otázka není dostupná')}</h2>
+              <button
+                className="ghost"
+                onClick={() => setView(mode === 'classic' ? 'topics' : 'landing')}
+                type="button"
+              >
+                {mode === 'classic' ? 'Změnit téma' : '← Zpět'}
               </button>
             </div>
+
+            {error && <p className="muted">⚠️ {error}</p>}
 
             {question?.imageUrl && <img src={question.imageUrl} alt="Ilustrace otázky" className="question-image" />}
 

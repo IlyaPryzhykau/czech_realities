@@ -1,8 +1,10 @@
-import type { GameMode, Question, Topic } from '../types';
+import type { Question, Topic } from '../types';
 
 export interface ApiClient {
-  getTopics(mode: GameMode): Promise<Topic[]>;
-  getNextQuestion(topicId: string, mode: GameMode): Promise<Question>;
+  getTopics(): Promise<Topic[]>;
+  getQuestionsByTopic(topicId: string): Promise<Question[]>;
+  getRandomQuestion(): Promise<Question>;
+  getRandomTicket(): Promise<Question[]>;
 }
 
 export const createApiClient = (impl: ApiClient): ApiClient => impl;

@@ -1,43 +1,51 @@
 # Czech Realities Frontend MVP
 
-Современный frontend MVP для проекта **Czech Realities** на базе **React + Vite + TypeScript**.
+React + Vite + TypeScript frontend для тренажёра по чешским реалиям.
 
-## Что реализовано
+## Что теперь поддерживается
 
-- ✅ **Landing** с 3 режимами:
-  - Classic
-  - Blitz (timed)
-  - Debate
-- ✅ **Topic picker** (карточки тем)
-- ✅ **Question view**:
-  - текст вопроса
-  - изображение
-  - варианты ответа
-- ✅ **Mockable API client слой**:
-  - интерфейс `ApiClient`
-  - текущая реализация: `mockClient`
-  - легко заменить на реальный backend
-- ✅ **Современный UI**:
-  - glass cards
-  - soft gradients / glowing orbs
-  - аккуратная типографика
-  - переключатель **dark/light theme**
-- ✅ **Адаптивность под mobile**
+- 3 рабочих режима с реальным API:
+  - **Klasický** → загрузка тем (`/topic/`) + вопросы по теме (`/question/by-topic/{id}`)
+  - **Náhodná otázka** → одна случайная (`/question/random-one`)
+  - **Náhodný testový lístek** → пакет случайных (`/question/random-ticket`)
+- Переключение **mock / real** через env
+- Маппинг backend-ответов в frontend domain-модели:
+  - `image_url | imageUrl | image_path | imagePath` → `imageUrl`
+  - `answers[]` → `options[]`
+  - `topic.id | topic_id` → `topicId`
 
-## Структура
+## API client слой
 
 ```bash
-frontend/
-  src/
-    api/
-      client.ts       # интерфейс API слоя
-      mockClient.ts   # мок-реализация
-    types.ts          # общие типы
-    App.tsx           # основной UI + экраны
-    App.css           # дизайн-система/стили
+src/api/
+  client.ts      # интерфейс ApiClient
+  mockClient.ts  # локальные моки
+  realClient.ts  # реальный HTTP client к backend
 ```
 
-## Запуск локально
+## Переменные окружения
+
+Создай `.env` на основе `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Доступные переменные:
+
+- `VITE_API_BASE_URL` — базовый URL backend (например `http://localhost:8000`)
+- `VITE_USE_MOCK`:
+  - `true` (по умолчанию) — mock client
+  - `false` — real API client
+
+### Прод-режим (без моков)
+
+```env
+VITE_USE_MOCK=false
+VITE_API_BASE_URL=https://your-backend-host
+```
+
+## Локальный запуск
 
 ```bash
 cd frontend
@@ -45,36 +53,9 @@ npm install
 npm run dev
 ```
 
-По умолчанию Vite поднимает dev-сервер на `http://localhost:5173`.
-
 ## Build
 
 ```bash
 npm run build
 npm run preview
-```
-
-## Как подключить реальный backend
-
-1. Реализовать `ApiClient`:
-   - `getTopics(mode)`
-   - `getNextQuestion(topicId, mode)`
-2. Заменить `mockClient` в `src/App.tsx` на ваш real client.
-
-Пример направления:
-
-```ts
-// src/api/httpClient.ts
-import type { ApiClient } from './client';
-
-export const httpClient: ApiClient = {
-  async getTopics(mode) {
-    const res = await fetch(`/api/topics?mode=${mode}`);
-    return res.json();
-  },
-  async getNextQuestion(topicId, mode) {
-    const res = await fetch(`/api/questions/next?topicId=${topicId}&mode=${mode}`);
-    return res.json();
-  },
-};
 ```
