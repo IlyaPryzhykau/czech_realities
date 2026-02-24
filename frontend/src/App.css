@@ -49,17 +49,19 @@ body[data-theme='dark'] {
   overflow-x: hidden;
   padding: clamp(16px, 2.2vw, 30px) clamp(16px, 4vw, 56px);
   display: flex;
+  justify-content: center;
 }
 
 .container {
-  width: min(860px, 100%);
+  width: min(960px, 100%);
+  max-width: 960px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 18px;
   position: relative;
   z-index: 2;
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
 }
 
