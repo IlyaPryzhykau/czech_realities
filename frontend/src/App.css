@@ -47,12 +47,12 @@ body[data-theme='dark'] {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  padding: 22px;
+  padding: clamp(14px, 2.6vw, 30px) clamp(12px, 3.5vw, 40px);
   display: flex;
 }
 
 .container {
-  width: min(1080px, 100%);
+  width: min(980px, 100%);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -311,23 +311,24 @@ body[data-theme='dark'] .topic-card:focus-visible {
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(181, 131, 117, 0.24);
-  background: rgba(255, 255, 255, 0.36);
+  background: rgba(255, 255, 255, 0.42);
 }
 
 body[data-theme='dark'] .media-frame {
-  background: rgba(23, 28, 40, 0.6);
+  background: rgba(23, 28, 40, 0.72);
 }
 
 .question-media-frame {
-  aspect-ratio: 16 / 9;
-  max-height: min(44vh, 360px);
+  aspect-ratio: 16 / 10;
+  min-height: clamp(180px, 34vh, 280px);
+  max-height: min(52vh, 440px);
 }
 
 .media-image {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
@@ -345,11 +346,13 @@ body[data-theme='dark'] .media-frame {
 .option-content {
   display: grid;
   gap: 10px;
+  align-content: start;
 }
 
 .option-media-frame {
   aspect-ratio: 4 / 3;
   border-radius: 12px;
+  min-height: clamp(132px, 22vw, 180px);
 }
 
 .option-image {
@@ -450,33 +453,32 @@ body[data-theme='dark'] .media-frame {
 
 .telegram-panel {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 16px;
 }
 
 .telegram-card {
   margin: 0;
-  border-radius: 20px;
+  border-radius: 16px;
   border: 1px solid var(--card-border);
-  background: rgba(255, 255, 255, 0.56);
-  padding: 10px;
+  background: rgba(255, 255, 255, 0.34);
+  padding: 8px;
+  width: fit-content;
+  justify-self: start;
 }
 
 body[data-theme='dark'] .telegram-card {
-  background: rgba(28, 35, 49, 0.7);
-}
-
-.telegram-card img {
-  width: 100%;
-  display: block;
-  border-radius: 14px;
+  background: rgba(28, 35, 49, 0.52);
 }
 
 .telegram-fallback-link {
   display: inline-flex;
-  margin-top: 10px;
-  padding: 9px 12px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0;
+  white-space: nowrap;
+  padding: 10px 14px;
   border-radius: 12px;
   text-decoration: none;
   font-weight: 600;
