@@ -47,12 +47,12 @@ body[data-theme='dark'] {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  padding: clamp(14px, 2.6vw, 30px) clamp(12px, 3.5vw, 40px);
+  padding: clamp(16px, 2.2vw, 30px) clamp(16px, 4vw, 56px);
   display: flex;
 }
 
 .container {
-  width: min(980px, 100%);
+  width: min(860px, 100%);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -464,20 +464,6 @@ body[data-theme='dark'] .media-image {
   gap: 16px;
 }
 
-.telegram-card {
-  margin: 0;
-  border-radius: 16px;
-  border: 1px solid var(--card-border);
-  background: rgba(255, 255, 255, 0.34);
-  padding: 8px;
-  width: fit-content;
-  justify-self: start;
-}
-
-body[data-theme='dark'] .telegram-card {
-  background: rgba(28, 35, 49, 0.52);
-}
-
 .telegram-fallback-link {
   display: inline-flex;
   align-items: center;
@@ -490,6 +476,7 @@ body[data-theme='dark'] .telegram-card {
   font-weight: 600;
   color: var(--btn-text);
   background: var(--btn-bg);
+  justify-self: start;
 }
 
 .legal-panel {

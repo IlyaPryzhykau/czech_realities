@@ -325,11 +325,9 @@ function App() {
                   Trénuj i v mobilu přes Telegram. Otevři přímo <strong>@CZECH_REALITIES_BOT</strong> přes tlačítko.
                 </p>
               </div>
-              <article className="telegram-card">
-                <a className="telegram-fallback-link" href={TELEGRAM_BOT_URL} target="_blank" rel="noreferrer">
-                  Otevřít bota v Telegramu
-                </a>
-              </article>
+              <a className="telegram-fallback-link" href={TELEGRAM_BOT_URL} target="_blank" rel="noreferrer">
+                Otevřít bota v Telegramu
+              </a>
             </section>
           </>
         )}
