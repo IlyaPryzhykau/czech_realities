@@ -386,7 +386,9 @@ function App() {
             {error && <p className="muted">⚠️ {error}</p>}
 
             {question?.imageUrl && !hasImageOptions && (
-              <img src={question.imageUrl} alt="Ilustrace otázky" className="question-image" />
+              <div className="media-frame question-media-frame">
+                <img src={question.imageUrl} alt="Ilustrace otázky" className="media-image question-image" />
+              </div>
             )}
 
             <div className="options-grid">
@@ -404,14 +406,16 @@ function App() {
                   >
                     <span className="option-content">
                       {hasImage && (
-                        <img
-                          src={opt.imageUrl}
-                          alt={hasText ? `Varianta: ${opt.text}` : 'Obrázková varianta odpovědi'}
-                          className="option-image"
-                          onError={() => {
-                            setFailedOptionImages((prev) => ({ ...prev, [opt.id]: true }));
-                          }}
-                        />
+                        <div className="media-frame option-media-frame">
+                          <img
+                            src={opt.imageUrl}
+                            alt={hasText ? `Varianta: ${opt.text}` : 'Obrázková varianta odpovědi'}
+                            className="media-image option-image"
+                            onError={() => {
+                              setFailedOptionImages((prev) => ({ ...prev, [opt.id]: true }));
+                            }}
+                          />
+                        </div>
                       )}
                       {hasText && <span>{opt.text}</span>}
                       {!hasImage && Boolean(opt.imageUrl) && (
