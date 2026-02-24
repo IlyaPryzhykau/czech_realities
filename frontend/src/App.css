@@ -320,8 +320,8 @@ body[data-theme='dark'] .media-frame {
 
 .question-media-frame {
   aspect-ratio: 16 / 10;
-  min-height: clamp(180px, 34vh, 280px);
-  max-height: min(52vh, 440px);
+  min-height: clamp(220px, 38vh, 360px);
+  max-height: min(56vh, 520px);
 }
 
 .media-image {
@@ -330,6 +330,11 @@ body[data-theme='dark'] .media-frame {
   display: block;
   object-fit: contain;
   object-position: center;
+  background: linear-gradient(160deg, rgba(255, 250, 245, 0.86), rgba(245, 232, 224, 0.72));
+}
+
+body[data-theme='dark'] .media-image {
+  background: linear-gradient(160deg, rgba(34, 41, 58, 0.92), rgba(23, 29, 41, 0.86));
 }
 
 .question-image {
@@ -352,7 +357,8 @@ body[data-theme='dark'] .media-frame {
 .option-media-frame {
   aspect-ratio: 4 / 3;
   border-radius: 12px;
-  min-height: clamp(132px, 22vw, 180px);
+  min-height: clamp(150px, 24vw, 220px);
+  max-height: min(34vh, 280px);
 }
 
 .option-image {
@@ -573,6 +579,16 @@ body[data-theme='dark'] .legal-card {
 
   .topbar {
     text-align: center;
+  }
+
+  .question-media-frame {
+    min-height: clamp(200px, 42vh, 300px);
+    max-height: min(48vh, 360px);
+  }
+
+  .option-media-frame {
+    min-height: clamp(170px, 46vw, 240px);
+    max-height: min(40vh, 280px);
   }
 
   .cookie-banner {
