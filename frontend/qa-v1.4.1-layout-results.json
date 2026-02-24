@@ -1,0 +1,96 @@
+{
+  "desktop": {
+    "viewport": "desktop",
+    "checks": {
+      "desktopStretchPass": false,
+      "telegramPass": true,
+      "imageLayoutPass": true,
+      "navigationAndAnswersPass": true
+    },
+    "landing": {
+      "viewport": {
+        "w": 1440,
+        "h": 900
+      },
+      "containerWidth": 1360,
+      "containerMaxExpected": 980,
+      "shellWidth": 1440,
+      "telegramPanelWidth": 1360,
+      "telegramCardHeight": 57,
+      "telegramLinkHeight": 39,
+      "telegramWhiteGapApprox": 0,
+      "telegramHasImage": false,
+      "horizontalOverflow": false
+    },
+    "questionLayout": {
+      "optionCount": 4,
+      "gridCols": "651px 651px",
+      "allInside": true,
+      "overlaps": false,
+      "imageHeights": [
+        278,
+        278,
+        278
+      ],
+      "imageRatios": [
+        0.451,
+        0.451,
+        0.451
+      ],
+      "horizontalOverflow": false
+    },
+    "answerFlow": {
+      "feedbackVisible": true,
+      "nextVisible": true,
+      "stayedInFlow": true,
+      "pass": true
+    }
+  },
+  "mobile": {
+    "viewport": "mobile",
+    "checks": {
+      "desktopStretchPass": true,
+      "telegramPass": true,
+      "imageLayoutPass": true,
+      "navigationAndAnswersPass": true
+    },
+    "landing": {
+      "viewport": {
+        "w": 390,
+        "h": 664
+      },
+      "containerWidth": 362,
+      "containerMaxExpected": 980,
+      "shellWidth": 390,
+      "telegramPanelWidth": 362,
+      "telegramCardHeight": 57,
+      "telegramLinkHeight": 39,
+      "telegramWhiteGapApprox": 0,
+      "telegramHasImage": false,
+      "horizontalOverflow": false
+    },
+    "questionLayout": {
+      "optionCount": 4,
+      "gridCols": "316px",
+      "allInside": true,
+      "overlaps": false,
+      "imageHeights": [
+        211,
+        211,
+        211
+      ],
+      "imageRatios": [
+        0.748,
+        0.748,
+        0.748
+      ],
+      "horizontalOverflow": false
+    },
+    "answerFlow": {
+      "feedbackVisible": true,
+      "nextVisible": true,
+      "stayedInFlow": true,
+      "pass": true
+    }
+  }
+}

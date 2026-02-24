@@ -1,0 +1,593 @@
+import { useEffect, useMemo, useState } from 'react';
+import './App.css';
+import { createApiClient } from './api/client';
+import { mockClient } from './api/mockClient';
+import { realApiClient } from './api/realClient';
+import type { GameMode, Question, QuestionOption, Topic } from './types';
+
+type View = 'landing' | 'topics' | 'question' | 'result' | 'legal';
+type LegalSection = 'privacy' | 'terms' | 'cookies';
+type CookieConsent = 'necessary' | 'all';
+
+const TOPIC_SESSION_SIZE = 10;
+const useMock = String(import.meta.env.VITE_USE_MOCK ?? 'false').toLowerCase() !== 'false';
+const api = createApiClient(useMock ? mockClient : realApiClient);
+
+const modeMeta: Record<GameMode, { title: string; description: string; badge: string }> = {
+  classic: {
+    title: 'Klasický režim',
+    description: 'Vyber téma a procvičuj otázky krok za krokem.',
+    badge: 'Podle tématu',
+  },
+  timed: {
+    title: 'Náhodná otázka',
+    description: 'Rychlá příprava: jedna nová otázka na kliknutí.',
+    badge: 'Rychlý trénink',
+  },
+  debate: {
+    title: 'Náhodný testový lístek',
+    description: 'Sada otázek napříč tématy jako u zkoušky.',
+    badge: 'Kompletní lístek',
+  },
+};
+
+const buildTopicSession = (questions: Question[], count: number): Question[] => {
+  if (questions.length === 0) return [];
+  const session: Question[] = [];
+  for (let i = 0; i < count; i += 1) {
+    session.push(questions[i % questions.length]);
+  }
+  return session;
+};
+
+const getCorrectOption = (question: Question | null): QuestionOption | null => {
+  if (!question) return null;
+  return question.options.find((opt) => opt.isCorrect === true || opt.correct === true) ?? null;
+};
+
+const TELEGRAM_BOT_URL = 'https://t.me/CZECH_REALITIES_BOT';
+
+function App() {
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const fromStorage = localStorage.getItem('theme');
+    return fromStorage === 'dark' ? 'dark' : 'light';
+  });
+  const [view, setView] = useState<View>('landing');
+  const [mode, setMode] = useState<GameMode>('classic');
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [questionQueue, setQuestionQueue] = useState<Question[]>([]);
+  const [queueIndex, setQueueIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [scoreCorrect, setScoreCorrect] = useState(0);
+  const [scoreAnswered, setScoreAnswered] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [failedOptionImages, setFailedOptionImages] = useState<Record<string, boolean>>({});
+  const [cookieConsent, setCookieConsent] = useState<CookieConsent | null>(() => {
+    const stored = localStorage.getItem('cookie-consent');
+    return stored === 'necessary' || stored === 'all' ? stored : null;
+  });
+  const [legalSection, setLegalSection] = useState<LegalSection>('privacy');
+
+  const question = questionQueue[queueIndex] ?? null;
+  const hasImageOptions = Boolean(question?.options?.some((opt) => Boolean(opt.imageUrl)));
+  const hasAnswered = selectedOption !== null;
+  const isSessionMode = mode === 'classic' || mode === 'debate';
+  const correctOption = getCorrectOption(question);
+  const isSelectedCorrect = Boolean(hasAnswered && correctOption && selectedOption === correctOption.id);
+  const sessionTotal = isSessionMode ? questionQueue.length : scoreAnswered;
+  const currentQuestionNumber = Math.min(queueIndex + 1, Math.max(questionQueue.length, 1));
+  const progressPercent = isSessionMode && sessionTotal > 0 ? (currentQuestionNumber / sessionTotal) * 100 : 0;
+
+  useEffect(() => {
+    document.body.dataset.theme = theme;
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    setFailedOptionImages({});
+  }, [question?.id]);
+
+  const headerSubtitle = useMemo(() => {
+    if (view === 'landing') return 'Moderní příprava na test z českých reálií.';
+    if (view === 'topics') return `Režim: ${modeMeta[mode].title}`;
+    if (view === 'result') return 'Výsledky aktuálního kola';
+    if (view === 'legal') return 'Právní informace a zásady používání služby';
+    return selectedTopic ? `Téma: ${selectedTopic.title}` : `Režim: ${modeMeta[mode].title}`;
+  }, [view, mode, selectedTopic]);
+
+  const resetSession = () => {
+    setQuestionQueue([]);
+    setQueueIndex(0);
+    setSelectedOption(null);
+    setScoreCorrect(0);
+    setScoreAnswered(0);
+  };
+
+  const startMode = async (nextMode: GameMode) => {
+    setMode(nextMode);
+    setSelectedTopic(null);
+    resetSession();
+    setError(null);
+
+    if (nextMode === 'classic') {
+      setIsLoading(true);
+      setView('topics');
+      try {
+        const data = await api.getTopics();
+        setTopics(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Nepodařilo se načíst témata.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    setView('question');
+    setIsLoading(true);
+    try {
+      if (nextMode === 'timed') {
+        const next = await api.getRandomQuestion();
+        setQuestionQueue([next]);
+        return;
+      }
+
+      const ticket = await api.getRandomTicket();
+      setQuestionQueue(ticket);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nepodařilo se načíst otázku.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const pickTopic = async (topic: Topic) => {
+    setSelectedTopic(topic);
+    resetSession();
+    setError(null);
+    setIsLoading(true);
+    setView('question');
+    try {
+      const questions = await api.getQuestionsByTopic(topic.id);
+      setQuestionQueue(buildTopicSession(questions, TOPIC_SESSION_SIZE));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nepodařilo se načíst otázky pro téma.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const answerQuestion = (optionId: string) => {
+    if (!question || hasAnswered) return;
+
+    setSelectedOption(optionId);
+    setScoreAnswered((prev) => prev + 1);
+
+    const selected = question.options.find((opt) => opt.id === optionId);
+    const selectedIsCorrect = selected?.isCorrect === true || selected?.correct === true;
+    if (selectedIsCorrect) {
+      setScoreCorrect((prev) => prev + 1);
+    }
+  };
+
+  const nextQuestion = async () => {
+    if (!hasAnswered) return;
+
+    setSelectedOption(null);
+    setError(null);
+
+    if (mode !== 'timed') {
+      if (queueIndex < questionQueue.length - 1) {
+        setQueueIndex((prev) => prev + 1);
+      } else {
+        setView('result');
+      }
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const next = await api.getRandomQuestion();
+      setQuestionQueue([next]);
+      setQueueIndex(0);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nepodařilo se načíst další otázku.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getOptionClassName = (opt: QuestionOption): string => {
+    const isSelected = selectedOption === opt.id;
+    const isCorrect = opt.isCorrect === true || opt.correct === true;
+
+    if (!hasAnswered) {
+      return `option-btn ${isSelected ? 'selected' : ''}`;
+    }
+
+    if (isCorrect) return 'option-btn correct';
+    if (isSelected && !isCorrect) return 'option-btn wrong';
+    return 'option-btn answered';
+  };
+
+  const getOptionDisplayText = (opt: QuestionOption): string => {
+    const text = opt.text.trim();
+    if (text) return text;
+    return opt.imageUrl ? 'Obrázková odpověď' : 'Bez textu';
+  };
+
+  const acceptCookies = (value: CookieConsent) => {
+    setCookieConsent(value);
+    localStorage.setItem('cookie-consent', value);
+  };
+
+  const openLegal = (section: LegalSection) => {
+    setLegalSection(section);
+    setView('legal');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const scorePercent = sessionTotal > 0 ? Math.round((scoreCorrect / sessionTotal) * 100) : 0;
+
+  return (
+    <div className="app-shell">
+      <div className="bg-orb orb-1" />
+      <div className="bg-orb orb-2" />
+      <div className="bg-orb orb-3" />
+
+      <main className="container">
+        <header className="topbar soft-card">
+          <div>
+            <h1>České reálie</h1>
+            <p>{headerSubtitle}</p>
+          </div>
+          <button
+            className="theme-toggle"
+            onClick={() => setTheme((v) => (v === 'dark' ? 'light' : 'dark'))}
+            type="button"
+          >
+            {theme === 'dark' ? '☀️ Světlý vzhled' : '🌙 Večerní vzhled'}
+          </button>
+        </header>
+
+        {view === 'landing' && (
+          <>
+            <section className="soft-card panel intro-panel">
+              <h2>Jak aplikace funguje</h2>
+              <p>
+                Vítej v přípravě na zkoušku z českých reálií. Vyber si režim podle toho, kolik máš času: od
+                rychlé jedné otázky až po celý testový lístek.
+              </p>
+
+              <div className="intro-kpi-grid">
+                <article className="kpi-card">
+                  <span className="kpi-label">Režimy</span>
+                  <strong>3 typy tréninku</strong>
+                  <p>Klasický, náhodná otázka a náhodný testový lístek.</p>
+                </article>
+                <article className="kpi-card">
+                  <span className="kpi-label">Struktura</span>
+                  <strong>Jasný průběh otázky</strong>
+                  <p>Nejdřív otázka, potom volba odpovědi a okamžitá zpětná vazba.</p>
+                </article>
+                <article className="kpi-card">
+                  <span className="kpi-label">Důležité</span>
+                  <strong>Počítá se úspěšnost</strong>
+                  <p>Během kola vidíš počet správných odpovědí i průběh.</p>
+                </article>
+              </div>
+
+              <div className="intro-grid">
+                <div>
+                  <h3>Režimy přípravy</h3>
+                  <ul>
+                    <li>
+                      <strong>Klasický režim:</strong> vybereš téma a procvičíš sérii otázek.
+                    </li>
+                    <li>
+                      <strong>Náhodná otázka:</strong> ideální na krátké opakování během dne.
+                    </li>
+                    <li>
+                      <strong>Náhodný testový lístek:</strong> mix témat podobný reálné zkoušce.
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h3>Jak je postavená otázka</h3>
+                  <ul>
+                    <li>Každá otázka obsahuje zadání a více variant odpovědí.</li>
+                    <li>Po výběru se hned zobrazí, zda je odpověď správná.</li>
+                    <li>U obrázkových variant se zvýrazní správná možnost stejně jako u textu.</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <section className="mode-grid">
+              {(Object.keys(modeMeta) as GameMode[]).map((modeKey) => (
+                <article className="mode-card soft-card" key={modeKey}>
+                  <span className="badge">{modeMeta[modeKey].badge}</span>
+                  <h2>{modeMeta[modeKey].title}</h2>
+                  <p>{modeMeta[modeKey].description}</p>
+                  <button onClick={() => void startMode(modeKey)} type="button">
+                    Spustit režim
+                  </button>
+                </article>
+              ))}
+            </section>
+
+            <section className="soft-card panel telegram-panel">
+              <div>
+                <h2>Telegram bot</h2>
+                <p>
+                  Trénuj i v mobilu přes Telegram. Otevři přímo <strong>@CZECH_REALITIES_BOT</strong> přes tlačítko.
+                </p>
+              </div>
+              <a className="telegram-fallback-link" href={TELEGRAM_BOT_URL} target="_blank" rel="noreferrer">
+                Otevřít bota v Telegramu
+              </a>
+            </section>
+          </>
+        )}
+
+        {view === 'topics' && (
+          <section className="soft-card panel">
+            <div className="panel-head">
+              <h2>Vyber téma</h2>
+              <button className="ghost" onClick={() => setView('landing')} type="button">
+                ← Zpět
+              </button>
+            </div>
+            {isLoading ? (
+              <p className="muted">Načítám témata…</p>
+            ) : (
+              <div className="topic-grid">
+                {topics.map((topic) => (
+                  <button
+                    key={topic.id}
+                    className="topic-card"
+                    onClick={() => void pickTopic(topic)}
+                    type="button"
+                  >
+                    <span className="topic-icon">{topic.icon}</span>
+                    <strong>{topic.title}</strong>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {view === 'question' && (
+          <section className="soft-card panel question-panel">
+            <div className="panel-head">
+              <h2>{question?.prompt ?? (isLoading ? 'Načítám otázku…' : 'Otázka není dostupná')}</h2>
+              <button
+                className="ghost"
+                onClick={() => setView(mode === 'classic' ? 'topics' : 'landing')}
+                type="button"
+              >
+                {mode === 'classic' ? 'Změnit téma' : '← Zpět'}
+              </button>
+            </div>
+
+            {isSessionMode && question && (
+              <div className="session-stats">
+                <div className="stats-row">
+                  <span>Otázka {currentQuestionNumber}/{sessionTotal}</span>
+                  <span>Správně: {scoreCorrect}/{scoreAnswered}</span>
+                </div>
+                <div className="progress-track" aria-label="Průběh testu">
+                  <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
+                </div>
+              </div>
+            )}
+
+            {error && <p className="muted">⚠️ {error}</p>}
+
+            {question?.imageUrl && !hasImageOptions && (
+              <div className="media-frame question-media-frame">
+                <img src={question.imageUrl} alt="Ilustrace otázky" className="media-image question-image" />
+              </div>
+            )}
+
+            <div className="options-grid">
+              {(question?.options ?? []).map((opt) => {
+                const hasImage = Boolean(opt.imageUrl) && !failedOptionImages[opt.id];
+                const hasText = opt.text.trim().length > 0;
+
+                return (
+                  <button
+                    key={opt.id}
+                    className={getOptionClassName(opt)}
+                    onClick={() => answerQuestion(opt.id)}
+                    type="button"
+                    disabled={hasAnswered}
+                  >
+                    <span className="option-content">
+                      {hasImage && (
+                        <div className="media-frame option-media-frame">
+                          <img
+                            src={opt.imageUrl}
+                            alt={hasText ? `Varianta: ${opt.text}` : 'Obrázková varianta odpovědi'}
+                            className="media-image option-image"
+                            onError={() => {
+                              setFailedOptionImages((prev) => ({ ...prev, [opt.id]: true }));
+                            }}
+                          />
+                        </div>
+                      )}
+                      {hasText && <span>{opt.text}</span>}
+                      {!hasImage && Boolean(opt.imageUrl) && (
+                        <span className="option-image-fallback">⚠️ Obrázek se nepodařilo načíst</span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {hasAnswered && question && (
+              <div className={`answer-feedback ${isSelectedCorrect ? 'ok' : 'bad'}`}>
+                <strong>{isSelectedCorrect ? '✅ Správně!' : '❌ Nesprávně.'}</strong>
+                {!isSelectedCorrect && correctOption && (
+                  <p>
+                    Správná odpověď: <strong>{getOptionDisplayText(correctOption)}</strong>
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="actions end">
+              {hasAnswered && (
+                <button onClick={() => void nextQuestion()} disabled={isLoading} type="button">
+                  {isLoading
+                    ? 'Načítám…'
+                    : mode !== 'timed' && queueIndex >= questionQueue.length - 1
+                      ? 'Zobrazit výsledek'
+                      : 'Další'}
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+
+        {view === 'result' && (
+          <section className="soft-card panel result-panel">
+            <h2>Výsledek kola</h2>
+            <p className="result-score">{scoreCorrect}/{sessionTotal}</p>
+            <p className="result-percent">Úspěšnost: {scorePercent}%</p>
+
+            <div className="actions">
+              {mode === 'classic' && selectedTopic && (
+                <button onClick={() => void pickTopic(selectedTopic)} type="button">
+                  Zopakovat téma
+                </button>
+              )}
+              {mode === 'debate' && (
+                <button onClick={() => void startMode('debate')} type="button">
+                  Nový testový lístek
+                </button>
+              )}
+              <button className="ghost" onClick={() => setView('landing')} type="button">
+                Na úvod
+              </button>
+            </div>
+          </section>
+        )}
+
+        {view === 'legal' && (
+          <section className="soft-card panel legal-panel">
+            <div className="panel-head legal-head">
+              <h2>Legal</h2>
+              <button className="ghost" onClick={() => setView('landing')} type="button">
+                ← Na úvod
+              </button>
+            </div>
+
+            <div className="legal-tabs">
+              <button
+                className={legalSection === 'privacy' ? '' : 'ghost'}
+                onClick={() => setLegalSection('privacy')}
+                type="button"
+              >
+                Privacy
+              </button>
+              <button
+                className={legalSection === 'terms' ? '' : 'ghost'}
+                onClick={() => setLegalSection('terms')}
+                type="button"
+              >
+                Terms
+              </button>
+              <button
+                className={legalSection === 'cookies' ? '' : 'ghost'}
+                onClick={() => setLegalSection('cookies')}
+                type="button"
+              >
+                Cookies
+              </button>
+            </div>
+
+            {legalSection === 'privacy' && (
+              <article className="legal-card">
+                <h3>Privacy Policy</h3>
+                <p>
+                  Respektujeme vaše soukromí. Aplikace ukládá pouze technická data potřebná pro provoz,
+                  například volbu vzhledu a cookie preference. Osobní údaje nepředáváme třetím stranám bez
+                  zákonného důvodu.
+                </p>
+                <p>
+                  Pokud máte dotaz k ochraně osobních údajů, napište na <a href="mailto:tuarone@gmail.com">tuarone@gmail.com</a>.
+                </p>
+              </article>
+            )}
+
+            {legalSection === 'terms' && (
+              <article className="legal-card">
+                <h3>Terms of Use</h3>
+                <p>
+                  Služba slouží pro vzdělávací a tréninkové účely. Obsah se průběžně aktualizuje a může obsahovat
+                  nepřesnosti. Používáním aplikace souhlasíte s tím, že provozovatel nenese odpovědnost za škody
+                  vzniklé použitím obsahu mimo zamýšlený účel.
+                </p>
+                <p>
+                  Pro obchodní nebo právní dotazy použijte kontakt <a href="mailto:tuarone@gmail.com">tuarone@gmail.com</a>.
+                </p>
+              </article>
+            )}
+
+            {legalSection === 'cookies' && (
+              <article className="legal-card">
+                <h3>Cookies Policy</h3>
+                <p>
+                  Web používá nezbytné cookies pro základní funkce (například uložené nastavení tématu). Po vašem
+                  souhlasu mohou být aktivovány i volitelné cookies pro zlepšení uživatelského zážitku.
+                </p>
+                <p>
+                  Své rozhodnutí můžete kdykoliv změnit odstraněním cookie preference v prohlížeči nebo přes
+                  kontaktní email <a href="mailto:tuarone@gmail.com">tuarone@gmail.com</a>.
+                </p>
+              </article>
+            )}
+          </section>
+        )}
+
+        <footer className="soft-card footer">
+          <button className="ghost" onClick={() => openLegal('privacy')} type="button">
+            Privacy
+          </button>
+          <button className="ghost" onClick={() => openLegal('terms')} type="button">
+            Terms
+          </button>
+          <button className="ghost" onClick={() => openLegal('cookies')} type="button">
+            Cookies
+          </button>
+        </footer>
+      </main>
+
+      {!cookieConsent && (
+        <aside className="cookie-banner soft-card" role="dialog" aria-label="Cookie notice">
+          <div>
+            <strong>Cookies na webu</strong>
+            <p>
+              Používáme nezbytné cookies pro správné fungování webu. Volitelně můžete povolit i všechny cookies.
+            </p>
+          </div>
+          <div className="cookie-actions">
+            <button className="ghost" onClick={() => acceptCookies('necessary')} type="button">
+              Только необходимые
+            </button>
+            <button onClick={() => acceptCookies('all')} type="button">
+              Принять всё
+            </button>
+          </div>
+        </aside>
+      )}
+    </div>
+  );
+}
+
+export default App;

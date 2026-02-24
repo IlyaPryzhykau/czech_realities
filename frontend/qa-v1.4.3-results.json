@@ -1,0 +1,40 @@
+{
+  "timestampUtc": "2026-02-24T00:30:47.192Z",
+  "checks": {
+    "desktopLayout": {
+      "ok": true,
+      "viewportWidth": 1440,
+      "shellWidth": 1440,
+      "containerWidth": 960,
+      "containerLeft": 240,
+      "containerRight": 1200,
+      "centered": true,
+      "css": {
+        "width": "960px",
+        "maxWidth": "960px",
+        "flex": "0 1 auto"
+      }
+    },
+    "telegram": {
+      "ok": true,
+      "panelDisplay": "grid",
+      "fallbackExists": true
+    },
+    "quizRegression": {
+      "classic": {},
+      "timed": {},
+      "debate": {
+        "answerFeedbackVisible": true
+      },
+      "errors": [
+        "classic: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.topic-card').first()\u001b[22m\n",
+        "timed: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.option-btn').first()\u001b[22m\n"
+      ]
+    },
+    "mobile": {
+      "horizontalOverflow": false,
+      "viewportWidth": 390,
+      "containerWidth": 362
+    }
+  }
+}
