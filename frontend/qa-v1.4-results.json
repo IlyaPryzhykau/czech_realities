@@ -1,0 +1,64 @@
+{
+  "desktop": {
+    "viewport": "desktop",
+    "qr": {
+      "qrImageVisible": true,
+      "qrImageAfterBlock": true,
+      "qrImageLoadedAfterBlock": false,
+      "fallbackLinkVisibleNormal": false,
+      "fallbackLinkVisibleBroken": false,
+      "pass": true,
+      "passBroken": false
+    },
+    "imageLayout": {
+      "optionCount": 4,
+      "gridCols": "669px 669px",
+      "horizontalOverflow": false,
+      "allInside": true,
+      "overlaps": false,
+      "imageHeights": [
+        475.75,
+        475.75,
+        475.75
+      ],
+      "pass": true
+    },
+    "answerFlow": {
+      "feedbackBadVisible": true,
+      "nextVisible": true,
+      "questionOrResultVisible": true,
+      "pass": true
+    }
+  },
+  "mobile": {
+    "viewport": "mobile",
+    "qr": {
+      "qrImageVisible": true,
+      "qrImageAfterBlock": true,
+      "qrImageLoadedAfterBlock": false,
+      "fallbackLinkVisibleNormal": false,
+      "fallbackLinkVisibleBroken": false,
+      "pass": true,
+      "passBroken": false
+    },
+    "imageLayout": {
+      "optionCount": 4,
+      "gridCols": "316px",
+      "horizontalOverflow": false,
+      "allInside": true,
+      "overlaps": false,
+      "imageHeights": [
+        211,
+        211,
+        211
+      ],
+      "pass": true
+    },
+    "answerFlow": {
+      "feedbackBadVisible": true,
+      "nextVisible": true,
+      "questionOrResultVisible": true,
+      "pass": true
+    }
+  }
+}
