@@ -473,6 +473,17 @@ body[data-theme='dark'] .telegram-card {
   border-radius: 14px;
 }
 
+.telegram-fallback-link {
+  display: inline-flex;
+  margin-top: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  color: var(--btn-text);
+  background: var(--btn-bg);
+}
+
 .legal-panel {
   gap: 14px;
 }

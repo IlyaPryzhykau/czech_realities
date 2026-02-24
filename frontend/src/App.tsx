@@ -45,6 +45,8 @@ const getCorrectOption = (question: Question | null): QuestionOption | null => {
   return question.options.find((opt) => opt.isCorrect === true || opt.correct === true) ?? null;
 };
 
+const TELEGRAM_BOT_URL = 'https://t.me/CZECH_REALITIES_BOT';
+
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const fromStorage = localStorage.getItem('theme');
@@ -320,11 +322,13 @@ function App() {
               <div>
                 <h2>Telegram bot</h2>
                 <p>
-                  Trénuj i v mobilu přes Telegram. Naskenuj QR kód a otevři <strong>@CZECH_REALITIES_BOT</strong>.
+                  Trénuj i v mobilu přes Telegram. Otevři přímo <strong>@CZECH_REALITIES_BOT</strong> přes tlačítko.
                 </p>
               </div>
               <article className="telegram-card">
-                <img src="/telegram-bot-qr.jpg?v=2" alt="QR kód pro Telegram bot @CZECH_REALITIES_BOT" />
+                <a className="telegram-fallback-link" href={TELEGRAM_BOT_URL} target="_blank" rel="noreferrer">
+                  Otevřít bota v Telegramu
+                </a>
               </article>
             </section>
           </>
