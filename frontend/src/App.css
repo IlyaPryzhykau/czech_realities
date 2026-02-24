@@ -48,15 +48,19 @@ body[data-theme='dark'] {
   position: relative;
   overflow-x: hidden;
   padding: 22px;
+  display: flex;
 }
 
 .container {
   width: min(1080px, 100%);
   margin: 0 auto;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 18px;
   position: relative;
   z-index: 2;
+  flex: 1;
+  min-height: 0;
 }
 
 .bg-orb {
@@ -505,6 +509,7 @@ body[data-theme='dark'] .legal-card {
   justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
+  margin-top: auto;
 }
 
 .cookie-banner {
@@ -529,6 +534,10 @@ body[data-theme='dark'] .legal-card {
 }
 
 @media (max-width: 920px) {
+  .app-shell {
+    padding: 14px;
+  }
+
   .mode-grid,
   .intro-kpi-grid {
     grid-template-columns: 1fr;
