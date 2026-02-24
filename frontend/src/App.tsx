@@ -10,7 +10,7 @@ type LegalSection = 'privacy' | 'terms' | 'cookies';
 type CookieConsent = 'necessary' | 'all';
 
 const TOPIC_SESSION_SIZE = 10;
-const useMock = String(import.meta.env.VITE_USE_MOCK ?? 'true').toLowerCase() !== 'false';
+const useMock = String(import.meta.env.VITE_USE_MOCK ?? 'false').toLowerCase() !== 'false';
 const api = createApiClient(useMock ? mockClient : realApiClient);
 
 const modeMeta: Record<GameMode, { title: string; description: string; badge: string }> = {
