@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /docs
+Disallow: /redoc
+Disallow: /openapi.json
+Disallow: /answer/
+Disallow: /category/
+Disallow: /question/
+Disallow: /topic/
+Disallow: /auth/
+Disallow: /users/
+
+Sitemap: https://czechrealities.cz/sitemap.xml
