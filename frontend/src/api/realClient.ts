@@ -3,7 +3,7 @@ import type { Question, QuestionOption, Topic } from '../types';
 
 type AnyRecord = Record<string, unknown>;
 
-const DEFAULT_API_BASE_URL = 'http://localhost:8000';
+const DEFAULT_API_BASE_URL = '';
 const RAW_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_BASE_URL) as string;
 const API_BASE_URL = RAW_BASE_URL.replace(/\/$/, '');
 
