@@ -65,9 +65,6 @@ services:
     build:
       context: .
       dockerfile: nginx/Dockerfile
-      args:
-        VITE_API_BASE_URL: ""
-        VITE_USE_MOCK: "false"
     container_name: czech_realities_nginx
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
